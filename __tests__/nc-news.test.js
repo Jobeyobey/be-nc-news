@@ -61,6 +61,74 @@ describe("/api/topics", () => {
     });
 });
 
+describe("/api/articles", () => {
+    test("GET200: sends an array of articles to the client, each with the following properties: author, title, article_id, topic, created_at, votes, article_img_url, comment_count", () => {
+        return request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then(({ body }) => {
+                body.articles.forEach((article) => {
+                    expect(article).toEqual({
+                        author: expect.any(String),
+                        title: expect.any(String),
+                        article_id: expect.any(Number),
+                        topic: expect.any(String),
+                        created_at: expect.any(String),
+                        votes: expect.any(Number),
+                        article_img_url: expect.any(String),
+                        comment_count: expect.any(Number),
+                    });
+                });
+            });
+    });
+    test("GET200: returned article comment_count correctly counts number of article comments", () => {
+        return request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then(({ body }) => {
+                body.articles.forEach((article) => {
+                    switch (article.article_id) {
+                        case 1:
+                            expect(article.comment_count).toBe(11);
+                            break;
+                        case 3:
+                            expect(article.comment_count).toBe(2);
+                            break;
+                        case 5:
+                            expect(article.comment_count).toBe(2);
+                            break;
+                        case 6:
+                            expect(article.comment_count).toBe(1);
+                            break;
+                        case 9:
+                            expect(article.comment_count).toBe(2);
+                            break;
+                        default:
+                            expect(article.comment_count).toBe(0);
+                    }
+                });
+            });
+    });
+    test("GET200: returned articles are ordered by date descending", () => {
+        return request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.articles).toBeSortedBy("created_at", {
+                    descending: true,
+                });
+            });
+    });
+    test("GET200: returns all articles", () => {
+        return request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.articles).toHaveLength(13);
+            });
+    });
+});
+
 describe("/api/articles/:article_id", () => {
     test("GET200: sends an article object to the client with following properties: author, title, article_id, body, topic, created_at, votes, article_img_url", () => {
         return request(app)
