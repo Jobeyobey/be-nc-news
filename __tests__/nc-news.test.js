@@ -48,3 +48,9 @@ describe("/api/topics", () => {
             });
     });
 });
+
+describe("Generic error handling", () => {
+    test("GET404: should respond with a 404 error if endpoint doesn't exist", () => {
+        return request(app).get("/api/no-endpoint").expect(404);
+    });
+});
