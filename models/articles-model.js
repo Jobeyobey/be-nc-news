@@ -52,3 +52,18 @@ exports.selectCommentsByArticleId = (article_id) => {
             return rows;
         });
 };
+
+exports.insertCommentByArticleId = (commentToPost) => {
+    return db
+        .query(
+            `INSERT INTO comments
+            (article_id, author, body)
+        VALUES
+            ($1, $2, $3)
+        RETURNING *`,
+            commentToPost
+        )
+        .then(({ rows }) => {
+            return rows[0];
+        });
+};

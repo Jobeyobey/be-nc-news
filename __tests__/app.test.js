@@ -139,57 +139,132 @@ describe("/api/articles/:article_id", () => {
 });
 
 describe("/api/articles/:article_id/comments", () => {
-    test("GET200: sends an array of all comments for the given article_id to the client, each with the following properties: comment_id, votes, created_at, author, body, article_id", () => {
-        return request(app)
-            .get("/api/articles/1/comments")
-            .expect(200)
-            .then(({ body }) => {
-                expect(body.comments).toHaveLength(11);
-                body.comments.forEach((comment) => {
-                    expect(comment).toEqual({
-                        comment_id: expect.any(Number),
-                        votes: expect.any(Number),
-                        created_at: expect.any(String),
-                        author: expect.any(String),
-                        body: expect.any(String),
-                        article_id: expect.any(Number),
+    describe("GET", () => {
+        test("GET200: sends an array of all comments for the given article_id to the client, each with the following properties: comment_id, votes, created_at, author, body, article_id", () => {
+            return request(app)
+                .get("/api/articles/1/comments")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.comments).toHaveLength(11);
+                    body.comments.forEach((comment) => {
+                        expect(comment).toEqual({
+                            comment_id: expect.any(Number),
+                            votes: expect.any(Number),
+                            created_at: expect.any(String),
+                            author: expect.any(String),
+                            body: expect.any(String),
+                            article_id: expect.any(Number),
+                        });
                     });
                 });
-            });
-    });
-    test("GET200: comments are returned with most recent comments first", () => {
-        return request(app)
-            .get("/api/articles/1/comments")
-            .expect(200)
-            .then(({ body }) => {
-                expect(body.comments).toBeSortedBy("created_at", {
-                    descending: true,
+        });
+        test("GET200: comments are returned with most recent comments first", () => {
+            return request(app)
+                .get("/api/articles/1/comments")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.comments).toBeSortedBy("created_at", {
+                        descending: true,
+                    });
                 });
-            });
+        });
+        test("GET200: returns an empty array without an error when article exists, but there are no comments", () => {
+            return request(app)
+                .get("/api/articles/10/comments")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.comments).toEqual([]);
+                });
+        });
+        test("GET400: sends an appropriate status and error message when given an invalid article id", () => {
+            return request(app)
+                .get("/api/articles/not-an-id/comments")
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("invalid article id");
+                });
+        });
+        test("GET404: sends an appropriate status and error message when given a valid but non-existent article id", () => {
+            return request(app)
+                .get("/api/articles/99995/comments")
+                .expect(404)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("article id does not exist");
+                });
+        });
     });
-    test("GET200: returns an empty array without an error when article exists, but there are no comments", () => {
-        return request(app)
-            .get("/api/articles/10/comments")
-            .expect(200)
-            .then(({ body }) => {
-                expect(body.comments).toEqual([]);
-            });
-    });
-    test("GET400: sends an appropriate status and error message when given an invalid article id", () => {
-        return request(app)
-            .get("/api/articles/not-an-id/comments")
-            .expect(400)
-            .then(({ body }) => {
-                expect(body.msg).toBe("invalid article id");
-            });
-    });
-    test("GET404: sends an appropriate status and error message when given a valid but non-existent article id", () => {
-        return request(app)
-            .get("/api/articles/99995/comments")
-            .expect(404)
-            .then(({ body }) => {
-                expect(body.msg).toBe("article id does not exist");
-            });
+    describe("POST", () => {
+        test("POST201: responds with the posted comment, when comment object is valid", () => {
+            return request(app)
+                .post("/api/articles/7/comments")
+                .send({
+                    username: "butter_bridge",
+                    body: "wwwwwaaaaadddsssssss   wasdwhy can't I move",
+                })
+                .expect(201)
+                .then(({ body }) => {
+                    expect(body.comment).toEqual({
+                        comment_id: 19,
+                        votes: 0,
+                        created_at: expect.any(String),
+                        author: "butter_bridge",
+                        body: "wwwwwaaaaadddsssssss   wasdwhy can't I move",
+                        article_id: 7,
+                    });
+                });
+        });
+        test("POST400: responds with appropriate error and message when comment object does not have a 'username' or 'body'", () => {
+            return request(app)
+                .post("/api/articles/7/comments")
+                .send({
+                    username: "butter_bridge",
+                })
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe(
+                        "request body is not a valid comment object"
+                    );
+                });
+        });
+        test("POST400: responds with appropriate error and message when comment object has additional properties to 'username' and 'body'", () => {
+            return request(app)
+                .post("/api/articles/7/comments")
+                .send({
+                    username: "butter_bridge",
+                    body: "comment body",
+                    otherProp: true,
+                })
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe(
+                        "request body is not a valid comment object"
+                    );
+                });
+        });
+        test("POST400: responds with appropriate error and message when username or body is null", () => {
+            return request(app)
+                .post("/api/articles/7/comments")
+                .send({
+                    username: null,
+                    body: null,
+                })
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("username or body can't be null");
+                });
+        });
+        test("POST404: responds with appropriate error and message when comment that article is posted to does not exist", () => {
+            return request(app)
+                .post("/api/articles/991/comments")
+                .send({
+                    username: "butter_bridge",
+                    body: "I love valid comments!",
+                })
+                .expect(404)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("article id does not exist");
+                });
+        });
     });
 });
 
