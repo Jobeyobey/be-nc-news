@@ -9,10 +9,6 @@ beforeEach(() => {
     return seed(testData);
 });
 
-afterAll(() => {
-    db.end();
-});
-
 describe("/api", () => {
     test("GET200: sends an object with all available endpoints with documentation to the client", () => {
         request(app)
@@ -131,6 +127,61 @@ describe("/api/articles/:article_id", () => {
     test("GET404: sends appropriate status and error message when given a valid but non-existent article id", () => {
         return request(app)
             .get("/api/articles/99357")
+            .expect(404)
+            .then(({ body }) => {
+                expect(body.msg).toBe("article id does not exist");
+            });
+    });
+});
+
+describe("/api/articles/:article_id/comments", () => {
+    test("GET200: sends an array of all comments for the given article_id to the client, each with the following properties: comment_id, votes, created_at, author, body, article_id", () => {
+        return request(app)
+            .get("/api/articles/1/comments")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.comments).toHaveLength(11);
+                body.comments.forEach((comment) => {
+                    expect(comment).toEqual({
+                        comment_id: expect.any(Number),
+                        votes: expect.any(Number),
+                        created_at: expect.any(String),
+                        author: expect.any(String),
+                        body: expect.any(String),
+                        article_id: expect.any(Number),
+                    });
+                });
+            });
+    });
+    test("GET200: comments are returned with most recent comments first", () => {
+        return request(app)
+            .get("/api/articles/1/comments")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.comments).toBeSortedBy("created_at", {
+                    descending: true,
+                });
+            });
+    });
+    test("GET200: returns an empty array without an error when article exists, but there are no comments", () => {
+        return request(app)
+            .get("/api/articles/10/comments")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.comments).toEqual([]);
+            });
+    });
+    test("GET400: sends an appropriate status and error message when given an invalid article id", () => {
+        return request(app)
+            .get("/api/articles/not-an-id/comments")
+            .expect(400)
+            .then(({ body }) => {
+                expect(body.msg).toBe("invalid article id");
+            });
+    });
+    test("GET404: sends an appropriate status and error message when given a valid but non-existent article id", () => {
+        return request(app)
+            .get("/api/articles/99995/comments")
             .expect(404)
             .then(({ body }) => {
                 expect(body.msg).toBe("article id does not exist");
