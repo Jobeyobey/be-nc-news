@@ -5,10 +5,13 @@ const { getTopics } = require("./controllers/topics-controller");
 const {
     getArticles,
     getArticleById,
-    getCommentsByArticleId,
-    postCommentByArticleId,
     patchArticleById,
 } = require("./controllers/articles-controller");
+const {
+    getCommentsByArticleId,
+    postCommentByArticleId,
+    removeCommentById,
+} = require("./controllers/comments-controller");
 const {
     psqlErrorHandlers,
     customErrorHandler,
@@ -28,6 +31,8 @@ app.patch("/api/articles/:article_id", patchArticleById);
 
 app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
 app.post("/api/articles/:article_id/comments", postCommentByArticleId);
+
+app.delete("/api/comments/:comment_id", removeCommentById);
 
 app.use(psqlErrorHandlers);
 app.use(customErrorHandler);
