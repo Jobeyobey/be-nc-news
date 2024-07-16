@@ -37,6 +37,21 @@ exports.selectArticleById = (article_id) => {
         });
 };
 
+exports.updateArticleById = (article_id, inc_votes) => {
+    const updateData = [article_id, inc_votes];
+    return db
+        .query(
+            `UPDATE articles
+            SET votes = votes + $2
+            WHERE article_id = $1
+            RETURNING *`,
+            updateData
+        )
+        .then(({ rows }) => {
+            return rows[0];
+        });
+};
+
 exports.selectCommentsByArticleId = (article_id) => {
     return db
         .query(
