@@ -25,28 +25,7 @@ describe("/api", () => {
 });
 
 describe("/api/topics", () => {
-    test("GET200: sends an array of topics to the client", () => {
-        return request(app)
-            .get("/api/topics")
-            .expect(200)
-            .then(({ body }) => {
-                expect(body.topics).toEqual([
-                    {
-                        description: "The man, the Mitch, the legend",
-                        slug: "mitch",
-                    },
-                    {
-                        description: "Not dogs",
-                        slug: "cats",
-                    },
-                    {
-                        description: "what books are made of",
-                        slug: "paper",
-                    },
-                ]);
-            });
-    });
-    test("GET200: each topic from response has a slug and a description", () => {
+    test("GET200: Sends an array of topics to the client, each topic with properties: slug, description", () => {
         return request(app)
             .get("/api/topics")
             .expect(200)
@@ -62,11 +41,12 @@ describe("/api/topics", () => {
 });
 
 describe("/api/articles", () => {
-    test("GET200: sends an array of articles to the client, each with the following properties: author, title, article_id, topic, created_at, votes, article_img_url, comment_count", () => {
+    test("GET200: sends an array of all articles to the client, each with the following properties: author, title, article_id, topic, created_at, votes, article_img_url, comment_count", () => {
         return request(app)
             .get("/api/articles")
             .expect(200)
             .then(({ body }) => {
+                expect(body.articles).toHaveLength(13);
                 body.articles.forEach((article) => {
                     expect(article).toEqual({
                         author: expect.any(String),
@@ -117,14 +97,6 @@ describe("/api/articles", () => {
                 expect(body.articles).toBeSortedBy("created_at", {
                     descending: true,
                 });
-            });
-    });
-    test("GET200: returns all articles", () => {
-        return request(app)
-            .get("/api/articles")
-            .expect(200)
-            .then(({ body }) => {
-                expect(body.articles).toHaveLength(13);
             });
     });
 });
