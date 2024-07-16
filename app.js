@@ -5,6 +5,7 @@ const { getTopics } = require("./controllers/topics-controller");
 const {
     getArticles,
     getArticleById,
+    getCommentsByArticleId,
 } = require("./controllers/articles-controller");
 const {
     psqlErrorHandlers,
@@ -18,6 +19,7 @@ app.get("/api/topics", getTopics);
 
 app.get("/api/articles", getArticles);
 app.get("/api/articles/:article_id", getArticleById);
+app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
 
 app.use(psqlErrorHandlers);
 app.use(customErrorHandler);

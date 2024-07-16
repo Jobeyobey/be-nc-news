@@ -138,6 +138,37 @@ describe("/api/articles/:article_id", () => {
     });
 });
 
+describe("/api/articles/:article_id/comments", () => {
+    test("GET200: sends an array of all comments for the given article_id to the client, each with the following properties: comment_id, votes, created_at, author, body, article_id", () => {
+        return request(app)
+            .get("/api/articles/1/comments")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.comments).toHaveLength(11);
+                body.comments.forEach((comment) => {
+                    expect(comment).toEqual({
+                        comment_id: expect.any(Number),
+                        votes: expect.any(Number),
+                        created_at: expect.any(String),
+                        author: expect.any(String),
+                        body: expect.any(String),
+                        article_id: expect.any(Number),
+                    });
+                });
+            });
+    });
+    test("GET200: comments are returned with most recent comments first", () => {
+        return request(app)
+            .get("/api/articles/1/comments")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.comments).toBeSortedBy("created_at", {
+                    descending: true,
+                });
+            });
+    });
+});
+
 describe("Generic error handling", () => {
     test("GET404: should respond with a 404 error if endpoint doesn't exist", () => {
         return request(app).get("/api/no-endpoint").expect(404);
