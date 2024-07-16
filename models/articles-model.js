@@ -1,5 +1,4 @@
 const db = require("../db/connection");
-const { checkArticleExistsById } = require("../models/model-utils");
 
 exports.selectArticles = () => {
     return db
@@ -39,26 +38,17 @@ exports.selectArticleById = (article_id) => {
 };
 
 exports.selectCommentsByArticleId = (article_id) => {
-    const articleExists = checkArticleExistsById(article_id);
-    const selectQuery = db.query(
-        `SELECT comments.*
-         FROM comments
-         LEFT JOIN articles
-         ON comments.article_id = articles.article_id
-         WHERE comments.article_id = $1
-         ORDER BY created_at DESC`,
-        [article_id]
-    );
-
-    return Promise.all([selectQuery, articleExists]).then(
-        ([{ rows }, articleExists]) => {
-            if (rows.length === 0 && !articleExists) {
-                return Promise.reject({
-                    status: 404,
-                    msg: "article id does not exist",
-                });
-            }
+    return db
+        .query(
+            `SELECT comments.*
+             FROM comments
+             LEFT JOIN articles
+             ON comments.article_id = articles.article_id
+             WHERE comments.article_id = $1
+             ORDER BY created_at DESC`,
+            [article_id]
+        )
+        .then(({ rows }) => {
             return rows;
-        }
-    );
+        });
 };
