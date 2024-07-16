@@ -4,6 +4,11 @@ const {
     formatComments,
 } = require("../db/seeds/utils");
 const { checkArticleExistsById } = require("../models/model-utils");
+const db = require("../db/connection");
+
+afterAll(() => {
+    db.end();
+});
 
 describe("convertTimestampToDate", () => {
     test("returns a new object", () => {

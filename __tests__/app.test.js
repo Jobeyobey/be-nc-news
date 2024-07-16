@@ -9,6 +9,10 @@ beforeEach(() => {
     return seed(testData);
 });
 
+afterAll(() => {
+    db.end();
+});
+
 describe("/api", () => {
     test("GET200: sends an object with all available endpoints with documentation to the client", () => {
         request(app)
