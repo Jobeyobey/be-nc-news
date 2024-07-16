@@ -1,8 +1,8 @@
 exports.psqlErrorHandlers = (err, req, res, next) => {
     if (err.code === "22P02") {
-        res.status(400).send({ msg: "invalid article id" });
+        res.status(400).send({ msg: "invalid id" });
     } else if (err.code === "23502") {
-        res.status(400).send({ msg: "username or body can't be null" });
+        res.status(400).send({ msg: "input can't be null or undefined" });
     } else {
         next(err);
     }

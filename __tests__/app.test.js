@@ -102,39 +102,98 @@ describe("/api/articles", () => {
 });
 
 describe("/api/articles/:article_id", () => {
-    test("GET200: sends an article object to the client with following properties: author, title, article_id, body, topic, created_at, votes, article_img_url", () => {
-        return request(app)
-            .get("/api/articles/1")
-            .expect(200)
-            .then(({ body }) => {
-                expect(body.article).toEqual({
-                    article_id: 1,
-                    title: "Living in the shadow of a great man",
-                    topic: "mitch",
-                    author: "butter_bridge",
-                    body: "I find this existence challenging",
-                    created_at: "2020-07-09T20:11:00.000Z",
-                    votes: 100,
-                    article_img_url:
-                        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+    describe("GET", () => {
+        test("GET200: sends an article object to the client with following properties: author, title, article_id, body, topic, created_at, votes, article_img_url", () => {
+            return request(app)
+                .get("/api/articles/1")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.article).toEqual({
+                        article_id: 1,
+                        title: "Living in the shadow of a great man",
+                        topic: "mitch",
+                        author: "butter_bridge",
+                        body: "I find this existence challenging",
+                        created_at: "2020-07-09T20:11:00.000Z",
+                        votes: 100,
+                        article_img_url:
+                            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                    });
                 });
-            });
+        });
+        test("GET400: sends an appropriate status and error message when given an invalid article id", () => {
+            return request(app)
+                .get("/api/articles/not-an-id")
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("invalid id");
+                });
+        });
+        test("GET404: sends appropriate status and error message when given a valid but non-existent article id", () => {
+            return request(app)
+                .get("/api/articles/99357")
+                .expect(404)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("article id does not exist");
+                });
+        });
     });
-    test("GET400: sends an appropriate status and error message when given an invalid article id", () => {
-        return request(app)
-            .get("/api/articles/not-an-id")
-            .expect(400)
-            .then(({ body }) => {
-                expect(body.msg).toBe("invalid article id");
-            });
-    });
-    test("GET404: sends appropriate status and error message when given a valid but non-existent article id", () => {
-        return request(app)
-            .get("/api/articles/99357")
-            .expect(404)
-            .then(({ body }) => {
-                expect(body.msg).toBe("article id does not exist");
-            });
+    describe("PATCH", () => {
+        test("PATCH200: updates and returns the specified article", () => {
+            return request(app)
+                .patch("/api/articles/8")
+                .send({ inc_votes: 50 })
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.article).toEqual({
+                        author: "icellusedkars",
+                        title: "Does Mitch predate civilisation?",
+                        body: "Archaeologists have uncovered a gigantic statue from the dawn of humanity, and it has an uncanny resemblance to Mitch. Surely I am not the only person who can see this?!",
+                        article_id: 8,
+                        topic: "mitch",
+                        created_at: "2020-04-17T01:08:00.000Z",
+                        votes: 50,
+                        article_img_url:
+                            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                    });
+                });
+        });
+        test("PATCH400: responds with appropriate error and message if patch request body does not include a 'inc_votes' property", () => {
+            return request(app)
+                .patch("/api/articles/8")
+                .send({ increase_votes: 10 })
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("input can't be null or undefined");
+                });
+        });
+        test("PATCH400: responds with appropriate error and message if inc_votes property is NaN", () => {
+            return request(app)
+                .patch("/api/articles/8")
+                .send({ inc_votes: "ten" })
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("inc_votes is NaN");
+                });
+        });
+        test("PATCH400: responds with appropriate error message if article_id is not a valid id", () => {
+            return request(app)
+                .patch("/api/articles/not-an-id")
+                .send({ inc_votes: 50 })
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("invalid id");
+                });
+        });
+        test("PATCH404: responds with appropriate error message if article_id is valid but does not exist", () => {
+            return request(app)
+                .patch("/api/articles/9959")
+                .send({ inc_votes: 50 })
+                .expect(404)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("article id does not exist");
+                });
+        });
     });
 });
 
@@ -181,7 +240,7 @@ describe("/api/articles/:article_id/comments", () => {
                 .get("/api/articles/not-an-id/comments")
                 .expect(400)
                 .then(({ body }) => {
-                    expect(body.msg).toBe("invalid article id");
+                    expect(body.msg).toBe("invalid id");
                 });
         });
         test("GET404: sends an appropriate status and error message when given a valid but non-existent article id", () => {
@@ -213,7 +272,7 @@ describe("/api/articles/:article_id/comments", () => {
                     });
                 });
         });
-        test("POST400: responds with appropriate error and message when comment object does not have a 'username' or 'body'", () => {
+        test("POST400: responds with appropriate error and message when comment object has a missing property", () => {
             return request(app)
                 .post("/api/articles/7/comments")
                 .send({
@@ -226,7 +285,7 @@ describe("/api/articles/:article_id/comments", () => {
                     );
                 });
         });
-        test("POST400: responds with appropriate error and message when comment object has additional properties to 'username' and 'body'", () => {
+        test("POST400: rejects post and responds with appropriate error and message when comment object has unexpected properties", () => {
             return request(app)
                 .post("/api/articles/7/comments")
                 .send({
@@ -250,7 +309,19 @@ describe("/api/articles/:article_id/comments", () => {
                 })
                 .expect(400)
                 .then(({ body }) => {
-                    expect(body.msg).toBe("username or body can't be null");
+                    expect(body.msg).toBe("input can't be null or undefined");
+                });
+        });
+        test("POST400: responds with appropriate error and message when article_id parameter is not valid", () => {
+            return request(app)
+                .post("/api/articles/not-an-id/comments")
+                .send({
+                    username: "butter_bridge",
+                    body: "I love valid comments!",
+                })
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("invalid id");
                 });
         });
         test("POST404: responds with appropriate error and message when comment that article is posted to does not exist", () => {
