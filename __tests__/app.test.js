@@ -9,10 +9,6 @@ beforeEach(() => {
     return seed(testData);
 });
 
-afterAll(() => {
-    db.end();
-});
-
 describe("/api", () => {
     test("GET200: sends an object with all available endpoints with documentation to the client", () => {
         request(app)
@@ -165,6 +161,30 @@ describe("/api/articles/:article_id/comments", () => {
                 expect(body.comments).toBeSortedBy("created_at", {
                     descending: true,
                 });
+            });
+    });
+    test("GET200: returns an empty array without an error when article exists, but there are no comments", () => {
+        return request(app)
+            .get("/api/articles/10/comments")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.comments).toEqual([]);
+            });
+    });
+    test("GET400: sends an appropriate status and error message when given an invalid article id", () => {
+        return request(app)
+            .get("/api/articles/not-an-id/comments")
+            .expect(400)
+            .then(({ body }) => {
+                expect(body.msg).toBe("invalid article id");
+            });
+    });
+    test("GET404: sends an appropriate status and error message when given a valid but non-existent article id", () => {
+        return request(app)
+            .get("/api/articles/99995/comments")
+            .expect(404)
+            .then(({ body }) => {
+                expect(body.msg).toBe("article id does not exist");
             });
     });
 });
