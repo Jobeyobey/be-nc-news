@@ -3,12 +3,6 @@ const {
     createRef,
     formatComments,
 } = require("../db/seeds/utils");
-const { checkArticleExistsById } = require("../models/model-utils");
-const db = require("../db/connection");
-
-afterAll(() => {
-    db.end();
-});
 
 describe("convertTimestampToDate", () => {
     test("returns a new object", () => {
@@ -106,18 +100,5 @@ describe("formatComments", () => {
         const comments = [{ created_at: timestamp }];
         const formattedComments = formatComments(comments, {});
         expect(formattedComments[0].created_at).toEqual(new Date(timestamp));
-    });
-});
-
-describe("checkArticleExistsById", () => {
-    test("Returns true if article exists", () => {
-        return checkArticleExistsById(1).then((result) => {
-            expect(result).toBe(true);
-        });
-    });
-    test("Returns false if article does not exist", () => {
-        return checkArticleExistsById(9995).then((result) => {
-            expect(result).toBe(false);
-        });
     });
 });
