@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const { checkArticleExistsById } = require("../models/model-utils");
 
 exports.selectArticles = () => {
     return db
@@ -18,37 +19,46 @@ exports.selectArticles = () => {
             GROUP BY articles.article_id
             ORDER BY created_at DESC;`
         )
-        .then((response) => {
-            return response.rows;
+        .then(({ rows }) => {
+            return rows;
         });
 };
 
 exports.selectArticleById = (article_id) => {
     return db
         .query("SELECT * from articles WHERE article_id = $1", [article_id])
-        .then((response) => {
-            if (response.rows.length === 0) {
+        .then(({ rows }) => {
+            if (rows.length === 0) {
                 return Promise.reject({
                     status: 404,
                     msg: "article id does not exist",
                 });
             }
-            return response.rows[0];
+            return rows[0];
         });
 };
 
 exports.selectCommentsByArticleId = (article_id) => {
-    return db
-        .query(
-            `SELECT comments.*
-            FROM comments
-            LEFT JOIN articles
-            ON comments.article_id = articles.article_id
-            WHERE comments.article_id = $1
-            ORDER BY created_at DESC`,
-            [article_id]
-        )
-        .then((response) => {
-            return response.rows;
-        });
+    const articleExists = checkArticleExistsById(article_id);
+    const selectQuery = db.query(
+        `SELECT comments.*
+         FROM comments
+         LEFT JOIN articles
+         ON comments.article_id = articles.article_id
+         WHERE comments.article_id = $1
+         ORDER BY created_at DESC`,
+        [article_id]
+    );
+
+    return Promise.all([selectQuery, articleExists]).then(
+        ([{ rows }, articleExists]) => {
+            if (rows.length === 0 && !articleExists) {
+                return Promise.reject({
+                    status: 404,
+                    msg: "article id does not exist",
+                });
+            }
+            return rows;
+        }
+    );
 };
