@@ -325,7 +325,7 @@ describe("/api/articles/:article_id/comments", () => {
                     expect(body.msg).toBe("invalid id");
                 });
         });
-        test("POST404: responds with appropriate error and message when comment that article is posted to does not exist", () => {
+        test("POST404: responds with appropriate error and message when article that comment is posted to does not exist", () => {
             return request(app)
                 .post("/api/articles/991/comments")
                 .send({
