@@ -5,15 +5,12 @@ const {
 } = require("../models/articles-model.js");
 
 exports.getArticles = (req, res, next) => {
-    let { sort_by, order } = req.query;
-    if (typeof sort_by === "string") {
-        sort_by = sort_by.toLowerCase();
-    }
-    if (typeof order === "string") {
-        order = order.toUpperCase();
-    }
+    let { topic, sort_by, order } = req.query;
+    if (sort_by) sort_by = sort_by.toLowerCase();
+    if (order) order = order.toUpperCase();
+    if (topic) topic = topic.toLowerCase();
 
-    selectArticles(sort_by, order).then((articles) => {
+    selectArticles(topic, sort_by, order).then((articles) => {
         res.status(200).send({ articles });
     });
 };

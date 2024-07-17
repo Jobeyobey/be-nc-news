@@ -10,10 +10,10 @@
         }
     },
     "GET /api/articles": {
-        "description": "serves an array of all articles",
+        "description": "serves an array of articles",
         "queries": {
             "author": "not-yet-available",
-            "topic": "not-yet-available",
+            "topic": "{topicToFilterBy}",
             "sort_by": [
                 "article_id",
                 "title",

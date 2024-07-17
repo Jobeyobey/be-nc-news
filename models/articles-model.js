@@ -1,6 +1,7 @@
 const db = require("../db/connection");
 
-exports.selectArticles = (sort_by, order) => {
+exports.selectArticles = (topic, sort_by, order) => {
+    const queries = [];
     const sortGreenList = [
         "article_id",
         "title",
@@ -30,11 +31,17 @@ exports.selectArticles = (sort_by, order) => {
                 COUNT(comments.article_id)::INT AS comment_count
             FROM articles
             LEFT JOIN comments
-            ON articles.article_id = comments.article_id
-            GROUP BY articles.article_id
-            ORDER BY ${sort_by} ${order};`;
+            ON articles.article_id = comments.article_id`;
 
-    return db.query(selectQuery).then(({ rows }) => {
+    if (topic) {
+        selectQuery += ` WHERE topic = $1`;
+        queries.push(topic);
+    }
+
+    selectQuery += ` GROUP BY articles.article_id
+                    ORDER BY ${sort_by} ${order};`;
+
+    return db.query(selectQuery, queries).then(({ rows }) => {
         return rows;
     });
 };
