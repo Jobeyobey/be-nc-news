@@ -1,4 +1,4 @@
-const { selectArticleById } = require("../models/articles-model");
+const { checkArticleExists } = require("../models/model-utils");
 const {
     selectCommentsByArticleId,
     insertCommentByArticleId,
@@ -7,7 +7,7 @@ const {
 
 exports.getCommentsByArticleId = (req, res, next) => {
     const { article_id } = req.params;
-    selectArticleById(article_id)
+    checkArticleExists(article_id)
         .then(() => {
             return selectCommentsByArticleId(article_id);
         })
@@ -33,10 +33,8 @@ exports.postCommentByArticleId = (req, res, next) => {
         });
     }
 
-    // Check article exists
-    selectArticleById(article_id)
+    checkArticleExists(article_id)
         .then(() => {
-            // Post comment
             const commentToPost = [article_id, username, body];
             return insertCommentByArticleId(commentToPost);
         })
