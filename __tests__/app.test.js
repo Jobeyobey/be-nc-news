@@ -101,6 +101,25 @@ describe("/api/articles", () => {
             });
     });
     describe("Article queries", () => {
+        test("GET200: including a 'topic' query for a valid topic returns a filtered array of articles, consisting only of the queried topic", () => {
+            return request(app)
+                .get("/api/articles?topic=mitch")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.articles).toHaveLength(12);
+                    body.articles.forEach((article) => {
+                        expect(article.topic).toBe("mitch");
+                    });
+                });
+        });
+        test("GET200: a valid but not-existing 'topic' query returns an empty array", () => {
+            return request(app)
+                .get("/api/articles?topic=aliens")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.articles).toEqual([]);
+                });
+        });
         test("GET200: including a 'sort_by' query for a valid column returns articles in descending order of that column", () => {
             return request(app)
                 .get("/api/articles?sort_by=votes")
