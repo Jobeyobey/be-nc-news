@@ -161,7 +161,7 @@ describe("/api/articles", () => {
 
 describe("/api/articles/:article_id", () => {
     describe("GET", () => {
-        test("GET200: sends an article object to the client with following properties: author, title, article_id, body, topic, created_at, votes, article_img_url", () => {
+        test("GET200: sends an article object to the client with following properties: author, title, article_id, body, topic, created_at, votes, article_img_url, comment_count", () => {
             return request(app)
                 .get("/api/articles/1")
                 .expect(200)
@@ -176,6 +176,7 @@ describe("/api/articles/:article_id", () => {
                         votes: 100,
                         article_img_url:
                             "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                        comment_count: 11,
                     });
                 });
         });
