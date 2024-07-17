@@ -339,31 +339,14 @@ describe("/api/articles/:article_id/comments", () => {
                 })
                 .expect(400)
                 .then(({ body }) => {
-                    expect(body.msg).toBe(
-                        "request body is not a valid comment object"
-                    );
+                    expect(body.msg).toBe("input can't be null or undefined");
                 });
         });
-        test("POST400: rejects post and responds with appropriate error and message when comment object has unexpected properties", () => {
+        test("POST400: responds with appropriate error and message when body is null", () => {
             return request(app)
                 .post("/api/articles/7/comments")
                 .send({
                     username: "butter_bridge",
-                    body: "comment body",
-                    otherProp: true,
-                })
-                .expect(400)
-                .then(({ body }) => {
-                    expect(body.msg).toBe(
-                        "request body is not a valid comment object"
-                    );
-                });
-        });
-        test("POST400: responds with appropriate error and message when username or body is null", () => {
-            return request(app)
-                .post("/api/articles/7/comments")
-                .send({
-                    username: null,
                     body: null,
                 })
                 .expect(400)
@@ -393,6 +376,16 @@ describe("/api/articles/:article_id/comments", () => {
                 .expect(404)
                 .then(({ body }) => {
                     expect(body.msg).toBe("article id does not exist");
+                });
+        });
+        test("POST404: responds with appropriate error and message when username in body of request does not exist", () => {
+            return request(app)
+                .post("/api/articles/1/comments")
+                .send({ username: "not-a-username", body: "I'm an imposter!" })
+                .expect(404)
+                .then(({ body }) => {
+                    console.log(body);
+                    expect(body.msg).toBe("username does not exist");
                 });
         });
     });

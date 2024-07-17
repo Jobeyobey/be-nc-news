@@ -3,7 +3,10 @@ const {
     createRef,
     formatComments,
 } = require("../db/seeds/utils");
-const { checkArticleExists } = require("../models/model-utils");
+const {
+    checkArticleExists,
+    checkUsernameExists,
+} = require("../models/model-utils");
 const db = require("../db/connection");
 
 afterAll(() => {
@@ -120,6 +123,22 @@ describe("checkArticleExists", () => {
             expect(err).toEqual({
                 status: 404,
                 msg: "article id does not exist",
+            });
+        });
+    });
+});
+
+describe("checkUsernameExists", () => {
+    test("Returns true if username exists", () => {
+        return checkUsernameExists("butter_bridge").then((result) => {
+            expect(result).toBe(true);
+        });
+    });
+    test("Throws a 404 error if username does not exist", () => {
+        return checkUsernameExists("not-a-user").catch((err) => {
+            expect(err).toEqual({
+                status: 404,
+                msg: "username does not exist",
             });
         });
     });
