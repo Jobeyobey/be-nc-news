@@ -25,11 +25,12 @@ describe("/api", () => {
 });
 
 describe("/api/topics", () => {
-    test("GET200: Sends an array of topics to the client, each topic with properties: slug, description", () => {
+    test("GET200: Sends an array of all topics to the client, each topic with properties: slug, description", () => {
         return request(app)
             .get("/api/topics")
             .expect(200)
             .then(({ body }) => {
+                expect(body.topics).toHaveLength(3);
                 body.topics.forEach((topic) => {
                     expect(topic).toMatchObject({
                         description: expect.any(String),
@@ -366,6 +367,24 @@ describe("/api/comments/:comment_id", () => {
             .expect(404)
             .then(({ body }) => {
                 expect(body.msg).toBe("comment does not exist");
+            });
+    });
+});
+
+describe("/api/users", () => {
+    test("GET200: sends an array of all users to the client, each user with properties: username, name, avatar_url", () => {
+        return request(app)
+            .get("/api/users")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.users).toHaveLength(4);
+                body.users.forEach((user) => {
+                    expect(user).toEqual({
+                        username: expect.any(String),
+                        name: expect.any(String),
+                        avatar_url: expect.any(String),
+                    });
+                });
             });
     });
 });

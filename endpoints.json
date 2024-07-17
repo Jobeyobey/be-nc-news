@@ -62,7 +62,7 @@
         "description": "serves an array of all comments for given article id",
         "queries": [],
         "exampleResponse": {
-            "article": [
+            "comments": [
                 {
                     "comment_id": 15,
                     "body": "I am 100% sure that we're not completely sure.",
@@ -100,5 +100,18 @@
         "description": "deletes a comment by comment_id. No response is returned.",
         "queries": [],
         "exampleResponse": {}
+    },
+    "GET /api/users": {
+        "description": "serves an array of all users",
+        "queries": [],
+        "exampleResponse": {
+            "users": [
+                {
+                    "username": "jobeyobey",
+                    "name": "joe",
+                    "avatar_url": "https://avatars.githubusercontent.com/u/117482381?v=4"
+                }
+            ]
+        }
     }
 }
