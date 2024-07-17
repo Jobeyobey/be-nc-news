@@ -1,4 +1,7 @@
-const { selectArticleById } = require("../models/articles-model");
+const {
+    checkArticleExists,
+    checkUsernameExists,
+} = require("../models/model-utils");
 const {
     selectCommentsByArticleId,
     insertCommentByArticleId,
@@ -7,7 +10,7 @@ const {
 
 exports.getCommentsByArticleId = (req, res, next) => {
     const { article_id } = req.params;
-    selectArticleById(article_id)
+    checkArticleExists(article_id)
         .then(() => {
             return selectCommentsByArticleId(article_id);
         })
@@ -21,22 +24,11 @@ exports.postCommentByArticleId = (req, res, next) => {
     const { article_id } = req.params;
     const { username, body } = req.body;
 
-    // Check comment is valid
-    if (
-        username === undefined ||
-        body === undefined ||
-        Object.keys(req.body).length > 2
-    ) {
-        next({
-            status: 400,
-            msg: "request body is not a valid comment object",
-        });
-    }
-
-    // Check article exists
-    selectArticleById(article_id)
+    checkArticleExists(article_id)
         .then(() => {
-            // Post comment
+            return checkUsernameExists(username);
+        })
+        .then(() => {
             const commentToPost = [article_id, username, body];
             return insertCommentByArticleId(commentToPost);
         })

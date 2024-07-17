@@ -3,6 +3,7 @@ const {
     selectArticleById,
     updateArticleById,
 } = require("../models/articles-model.js");
+const { checkArticleExists } = require("../models/model-utils.js");
 
 exports.getArticles = (req, res, next) => {
     let { topic, sort_by, order } = req.query;
@@ -17,9 +18,11 @@ exports.getArticles = (req, res, next) => {
 
 exports.getArticleById = (req, res, next) => {
     const { article_id } = req.params;
-    selectArticleById(article_id)
-        .then((article) => {
-            res.status(200).send({ article });
+    checkArticleExists(article_id)
+        .then(() => {
+            selectArticleById(article_id).then((article) => {
+                res.status(200).send({ article });
+            });
         })
         .catch(next);
 };
@@ -31,7 +34,7 @@ exports.patchArticleById = (req, res, next) => {
         next({ status: 400, msg: "inc_votes is NaN" });
     }
 
-    selectArticleById(article_id)
+    checkArticleExists(article_id)
         .then(() => {
             return updateArticleById(article_id, inc_votes);
         })
