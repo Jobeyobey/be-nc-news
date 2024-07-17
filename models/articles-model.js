@@ -1,9 +1,25 @@
 const db = require("../db/connection");
 
-exports.selectArticles = () => {
-    return db
-        .query(
-            `SELECT
+exports.selectArticles = (sort_by, order) => {
+    const sortGreenList = [
+        "article_id",
+        "title",
+        "topic",
+        "author",
+        "body",
+        "created_at",
+        "votes",
+    ];
+    const orderGreenList = ["ASC", "DESC"];
+
+    if (!sortGreenList.includes(sort_by)) {
+        sort_by = "created_at";
+    }
+    if (!orderGreenList.includes(order)) {
+        order = "DESC";
+    }
+
+    let selectQuery = `SELECT
                 articles.author,
                 articles.title,
                 articles.article_id,
@@ -16,11 +32,11 @@ exports.selectArticles = () => {
             LEFT JOIN comments
             ON articles.article_id = comments.article_id
             GROUP BY articles.article_id
-            ORDER BY created_at DESC;`
-        )
-        .then(({ rows }) => {
-            return rows;
-        });
+            ORDER BY ${sort_by} ${order};`;
+
+    return db.query(selectQuery).then(({ rows }) => {
+        return rows;
+    });
 };
 
 exports.selectArticleById = (article_id) => {

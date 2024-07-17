@@ -90,7 +90,7 @@ describe("/api/articles", () => {
                 });
             });
     });
-    test("GET200: returned articles are ordered by date descending", () => {
+    test("GET200: returned articles are ordered by date descending by default", () => {
         return request(app)
             .get("/api/articles")
             .expect(200)
@@ -99,6 +99,44 @@ describe("/api/articles", () => {
                     descending: true,
                 });
             });
+    });
+    describe("Article queries", () => {
+        test("GET200: including a 'sort_by' query for a valid column returns articles in descending order of that column", () => {
+            return request(app)
+                .get("/api/articles?sort_by=votes")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.articles).toBeSortedBy("votes", {
+                        descending: true,
+                    });
+                });
+        });
+        test("GET200: including a 'order_by' query of 'asc' sorts articles in ascending order", () => {
+            return request(app)
+                .get("/api/articles?order=asc")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.articles).toBeSortedBy("created_at");
+                });
+        });
+        test("GET200: including an invalid 'order_by' query defaults to order by descending", () => {
+            return request(app)
+                .get("/api/articles?sort_by=author&order=tallest-first")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.articles).toBeSortedBy("author", {
+                        descending: true,
+                    });
+                });
+        });
+        test("GET200: including an invalid 'sort_by' query defaults to sort by created_at", () => {
+            return request(app)
+                .get("/api/articles?sort_by=popular&order=asc")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.articles).toBeSortedBy("created_at");
+                });
+        });
     });
 });
 
