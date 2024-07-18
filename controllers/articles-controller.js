@@ -1,9 +1,13 @@
 const {
     selectArticles,
     selectArticleById,
+    insertArticle,
     updateArticleById,
 } = require("../models/articles-model.js");
-const { checkArticleExists } = require("../models/model-utils.js");
+const {
+    checkArticleExists,
+    checkUsernameExists,
+} = require("../models/model-utils.js");
 const { checkVotesIsNum } = require("./controller-utils.js");
 
 exports.getArticles = (req, res, next) => {
@@ -24,6 +28,22 @@ exports.getArticleById = (req, res, next) => {
             selectArticleById(article_id).then((article) => {
                 res.status(200).send({ article });
             });
+        })
+        .catch(next);
+};
+
+exports.postArticle = (req, res, next) => {
+    const { title, topic, author, body, article_img_url } = req.body;
+
+    checkUsernameExists(author)
+        .then(() => {
+            return insertArticle(title, topic, author, body, article_img_url);
+        })
+        .then((postedArticle) => {
+            return selectArticleById(postedArticle.article_id);
+        })
+        .then((article) => {
+            res.status(201).send({ article });
         })
         .catch(next);
 };
