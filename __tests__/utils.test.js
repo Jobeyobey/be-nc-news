@@ -6,8 +6,10 @@ const {
 const {
     checkArticleExists,
     checkUsernameExists,
+    checkCommentExists,
 } = require("../models/model-utils");
 const db = require("../db/connection");
+const { checkVotesIsNum } = require("../controllers/controller-utils");
 
 afterAll(() => {
     db.end();
@@ -140,6 +142,35 @@ describe("checkUsernameExists", () => {
                 status: 404,
                 msg: "username not found",
             });
+        });
+    });
+});
+
+describe("checkCommentExists", () => {
+    test("Returns true if comment exists", () => {
+        return checkCommentExists(1).then((result) => {
+            expect(result).toBe(true);
+        });
+    });
+    test("Throws a 404 error if comment does not exist", () => {
+        return checkCommentExists(897).catch((err) => {
+            expect(err).toEqual({
+                status: 404,
+                msg: "comment not found",
+            });
+        });
+    });
+});
+
+describe("checkVotesIsNum", () => {
+    test("Returns true if input is a number", () => {
+        return checkVotesIsNum(1).then((result) => {
+            expect(result).toBe(true);
+        });
+    });
+    test("Returns a rejected promise if votes is not a number", () => {
+        return checkVotesIsNum("one").catch((err) => {
+            expect(err).toEqual({ status: 400, msg: "inc_votes is NaN" });
         });
     });
 });
