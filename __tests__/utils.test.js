@@ -122,7 +122,7 @@ describe("checkArticleExists", () => {
         return checkArticleExists(9995).catch((err) => {
             expect(err).toEqual({
                 status: 404,
-                msg: "article id does not exist",
+                msg: "article id not found",
             });
         });
     });
@@ -138,7 +138,7 @@ describe("checkUsernameExists", () => {
         return checkUsernameExists("not-a-user").catch((err) => {
             expect(err).toEqual({
                 status: 404,
-                msg: "username does not exist",
+                msg: "username not found",
             });
         });
     });

@@ -43,7 +43,7 @@ exports.deleteCommentById = (comment_id) => {
             if (rows.length === 0) {
                 return Promise.reject({
                     status: 404,
-                    msg: "comment does not exist",
+                    msg: "comment not found",
                 });
             }
         });

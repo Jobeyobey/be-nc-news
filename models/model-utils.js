@@ -7,7 +7,7 @@ exports.checkArticleExists = (article_id) => {
             if (rows.length === 0) {
                 return Promise.reject({
                     status: 404,
-                    msg: "article id does not exist",
+                    msg: "article id not found",
                 });
             } else {
                 return true;
@@ -22,7 +22,7 @@ exports.checkUsernameExists = (username) => {
             if (rows.length === 0) {
                 return Promise.reject({
                     status: 404,
-                    msg: "username does not exist",
+                    msg: "username not found",
                 });
             } else {
                 return true;

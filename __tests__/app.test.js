@@ -193,7 +193,7 @@ describe("/api/articles/:article_id", () => {
                 .get("/api/articles/99357")
                 .expect(404)
                 .then(({ body }) => {
-                    expect(body.msg).toBe("article id does not exist");
+                    expect(body.msg).toBe("article id not found");
                 });
         });
     });
@@ -250,7 +250,7 @@ describe("/api/articles/:article_id", () => {
                 .send({ inc_votes: 50 })
                 .expect(404)
                 .then(({ body }) => {
-                    expect(body.msg).toBe("article id does not exist");
+                    expect(body.msg).toBe("article id not found");
                 });
         });
     });
@@ -307,7 +307,7 @@ describe("/api/articles/:article_id/comments", () => {
                 .get("/api/articles/99995/comments")
                 .expect(404)
                 .then(({ body }) => {
-                    expect(body.msg).toBe("article id does not exist");
+                    expect(body.msg).toBe("article id not found");
                 });
         });
     });
@@ -375,7 +375,7 @@ describe("/api/articles/:article_id/comments", () => {
                 })
                 .expect(404)
                 .then(({ body }) => {
-                    expect(body.msg).toBe("article id does not exist");
+                    expect(body.msg).toBe("article id not found");
                 });
         });
         test("POST404: responds with appropriate error and message when username in body of request does not exist", () => {
@@ -384,8 +384,7 @@ describe("/api/articles/:article_id/comments", () => {
                 .send({ username: "not-a-username", body: "I'm an imposter!" })
                 .expect(404)
                 .then(({ body }) => {
-                    console.log(body);
-                    expect(body.msg).toBe("username does not exist");
+                    expect(body.msg).toBe("username not found");
                 });
         });
     });
@@ -417,7 +416,7 @@ describe("/api/comments/:comment_id", () => {
             .delete("/api/comments/98327")
             .expect(404)
             .then(({ body }) => {
-                expect(body.msg).toBe("comment does not exist");
+                expect(body.msg).toBe("comment not found");
             });
     });
 });
@@ -436,6 +435,30 @@ describe("/api/users", () => {
                         avatar_url: expect.any(String),
                     });
                 });
+            });
+    });
+});
+
+describe("/api/users/:username", () => {
+    test("GET200: if username exists, sends a user object to the client with properties: username, name, avatar_url", () => {
+        return request(app)
+            .get("/api/users/butter_bridge")
+            .expect(200)
+            .then(({ body }) => {
+                expect(body.user).toMatchObject({
+                    username: "butter_bridge",
+                    name: "jonny",
+                    avatar_url:
+                        "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
+                });
+            });
+    });
+    test("GET404: sends an appropriate error and message when given a username that doesn't exist", () => {
+        return request(app)
+            .get("/api/users/not_a_user")
+            .expect(404)
+            .then(({ body }) => {
+                expect(body.msg).toBe("username not found");
             });
     });
 });
