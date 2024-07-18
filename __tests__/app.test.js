@@ -42,63 +42,157 @@ describe("/api/topics", () => {
 });
 
 describe("/api/articles", () => {
-    test("GET200: sends an array of all articles to the client, each with the following properties: author, title, article_id, topic, created_at, votes, article_img_url, comment_count", () => {
-        return request(app)
-            .get("/api/articles")
-            .expect(200)
-            .then(({ body }) => {
-                expect(body.articles).toHaveLength(13);
-                body.articles.forEach((article) => {
-                    expect(article).toEqual({
-                        author: expect.any(String),
-                        title: expect.any(String),
-                        article_id: expect.any(Number),
-                        topic: expect.any(String),
-                        created_at: expect.any(String),
-                        votes: expect.any(Number),
-                        article_img_url: expect.any(String),
-                        comment_count: expect.any(Number),
+    describe("GET", () => {
+        test("GET200: sends an array of all articles to the client, each with the following properties: author, title, article_id, topic, created_at, votes, article_img_url, comment_count", () => {
+            return request(app)
+                .get("/api/articles")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.articles).toHaveLength(13);
+                    body.articles.forEach((article) => {
+                        expect(article).toEqual({
+                            author: expect.any(String),
+                            title: expect.any(String),
+                            article_id: expect.any(Number),
+                            topic: expect.any(String),
+                            created_at: expect.any(String),
+                            votes: expect.any(Number),
+                            article_img_url: expect.any(String),
+                            comment_count: expect.any(Number),
+                        });
                     });
                 });
-            });
-    });
-    test("GET200: returned article comment_count correctly counts number of article comments", () => {
-        return request(app)
-            .get("/api/articles")
-            .expect(200)
-            .then(({ body }) => {
-                body.articles.forEach((article) => {
-                    switch (article.article_id) {
-                        case 1:
-                            expect(article.comment_count).toBe(11);
-                            break;
-                        case 3:
-                            expect(article.comment_count).toBe(2);
-                            break;
-                        case 5:
-                            expect(article.comment_count).toBe(2);
-                            break;
-                        case 6:
-                            expect(article.comment_count).toBe(1);
-                            break;
-                        case 9:
-                            expect(article.comment_count).toBe(2);
-                            break;
-                        default:
-                            expect(article.comment_count).toBe(0);
-                    }
+        });
+        test("GET200: returned article comment_count correctly counts number of article comments", () => {
+            return request(app)
+                .get("/api/articles")
+                .expect(200)
+                .then(({ body }) => {
+                    body.articles.forEach((article) => {
+                        switch (article.article_id) {
+                            case 1:
+                                expect(article.comment_count).toBe(11);
+                                break;
+                            case 3:
+                                expect(article.comment_count).toBe(2);
+                                break;
+                            case 5:
+                                expect(article.comment_count).toBe(2);
+                                break;
+                            case 6:
+                                expect(article.comment_count).toBe(1);
+                                break;
+                            case 9:
+                                expect(article.comment_count).toBe(2);
+                                break;
+                            default:
+                                expect(article.comment_count).toBe(0);
+                        }
+                    });
                 });
-            });
-    });
-    test("GET200: returned articles are ordered by date descending by default", () => {
-        return request(app)
-            .get("/api/articles")
-            .expect(200)
-            .then(({ body }) => {
-                expect(body.articles).toBeSortedBy("created_at", {
-                    descending: true,
+        });
+        test("GET200: returned articles are ordered by date descending by default", () => {
+            return request(app)
+                .get("/api/articles")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.articles).toBeSortedBy("created_at", {
+                        descending: true,
+                    });
                 });
-            });
+        });
+    });
+    describe("POST", () => {
+        test("POST201: responds with the posted article, with the original properties as well as: article_id, votes, created_at, comment_count", () => {
+            return request(app)
+                .post("/api/articles")
+                .send({
+                    title: "Living in the shadow of a great man",
+                    topic: "mitch",
+                    author: "butter_bridge",
+                    body: "I find this existence challenging",
+                    article_img_url:
+                        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                })
+                .expect(201)
+                .then(({ body }) => {
+                    expect(body.article).toEqual({
+                        title: "Living in the shadow of a great man",
+                        topic: "mitch",
+                        author: "butter_bridge",
+                        body: "I find this existence challenging",
+                        article_img_url:
+                            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                        article_id: 14,
+                        votes: 0,
+                        created_at: expect.any(String),
+                        comment_count: 0,
+                    });
+                });
+        });
+        test("POST201: uses the default article_img_url if not provided", () => {
+            return request(app)
+                .post("/api/articles")
+                .send({
+                    title: "Living in the shadow of a great man",
+                    topic: "mitch",
+                    author: "butter_bridge",
+                    body: "I find this existence challenging",
+                })
+                .expect(201)
+                .then(({ body }) => {
+                    expect(body.article.article_img_url).toBe(
+                        "https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700"
+                    );
+                });
+        });
+        test("POST400: responds with appropriate error and message when article is missing a required property", () => {
+            return request(app)
+                .post("/api/articles")
+                .send({
+                    topic: "mitch",
+                    author: "butter_bridge",
+                    body: "I find this existence challenging",
+                    article_img_url:
+                        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                })
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("input can't be null or undefined");
+                });
+        });
+        test("POST400: responds with appropriate error and message when any properties are null", () => {
+            return request(app)
+                .post("/api/articles")
+                .send({
+                    title: null,
+                    topic: "mitch",
+                    author: "butter_bridge",
+                    body: "I find this existence challenging",
+                    article_img_url:
+                        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                })
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("input can't be null or undefined");
+                });
+        });
+        test("POST404: responds with appropriate error and message when author does not match an existing username", () => {
+            return request(app)
+                .post("/api/articles")
+                .send({
+                    title: "Living in the shadow of a great man",
+                    topic: "mitch",
+                    author: "not_a_user",
+                    body: "I find this existence challenging",
+                    article_img_url:
+                        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                })
+                .expect(404)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("username not found");
+                });
+        });
     });
     describe("Article queries", () => {
         test("GET200: including a 'topic' query for a valid topic returns a filtered array of articles, consisting only of the queried topic", () => {
@@ -331,7 +425,7 @@ describe("/api/articles/:article_id/comments", () => {
                     });
                 });
         });
-        test("POST400: responds with appropriate error and message when comment object has a missing property", () => {
+        test("POST400: responds with appropriate error and message when comment object has a missing a property", () => {
             return request(app)
                 .post("/api/articles/7/comments")
                 .send({

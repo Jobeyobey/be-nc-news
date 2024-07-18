@@ -63,6 +63,31 @@ exports.selectArticleById = (article_id) => {
         });
 };
 
+exports.insertArticle = (title, topic, author, body, article_img_url) => {
+    const insertParams = [title, topic, author, body];
+
+    let insertQuery = `INSERT INTO articles `;
+
+    if (article_img_url) {
+        insertQuery += `
+                            (title, topic, author, body, article_img_url)
+                        VALUES
+                            ($1, $2, $3, $4, $5)
+                        RETURNING *`;
+        insertParams.push(article_img_url);
+    } else {
+        insertQuery += `
+                            (title, topic, author, body)
+                        VALUES
+                            ($1, $2, $3, $4)
+                        RETURNING *`;
+    }
+
+    return db.query(insertQuery, insertParams).then(({ rows }) => {
+        return rows[0];
+    });
+};
+
 exports.updateArticleById = (article_id, inc_votes) => {
     const updateData = [article_id, inc_votes];
     return db
