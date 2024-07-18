@@ -1,6 +1,19 @@
 const db = require("../db/connection");
 
-exports.selectArticles = (topic, sort_by, order) => {
+exports.countArticles = (topic) => {
+    const params = [];
+    let selectQuery = `SELECT count(*) FROM ARTICLES`;
+    if (topic) {
+        selectQuery += ` WHERE topic = $1`;
+        params.push(topic);
+    }
+
+    return db.query(selectQuery, params).then(({ rows }) => {
+        return rows[0];
+    });
+};
+
+exports.selectArticles = (topic, sort_by, order, limit = 10, offset) => {
     const queries = [];
     const sortGreenList = [
         "article_id",
@@ -39,9 +52,16 @@ exports.selectArticles = (topic, sort_by, order) => {
     }
 
     selectQuery += ` GROUP BY articles.article_id
-                    ORDER BY ${sort_by} ${order};`;
+                    ORDER BY ${sort_by} ${order}
+                    LIMIT ${limit}`;
+    if (offset) {
+        selectQuery += ` OFFSET ${offset}`;
+    }
 
     return db.query(selectQuery, queries).then(({ rows }) => {
+        if (rows.length === 0) {
+            return Promise.reject({ status: 404, msg: "no articles found" });
+        }
         return rows;
     });
 };
