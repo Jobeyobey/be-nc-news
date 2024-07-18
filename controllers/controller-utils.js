@@ -1,7 +1,8 @@
-exports.checkVotesIsNum = (inc_votes) => {
-    if (inc_votes && isNaN(inc_votes)) {
-        return Promise.reject({ status: 400, msg: "inc_votes is NaN" });
-    } else {
-        return Promise.resolve(true);
+exports.checkNums = (input) => {
+    for (let i = 0; i < input.length; i++) {
+        if (input[i] && isNaN(input[i])) {
+            return Promise.reject({ status: 400, msg: `"${input[i]}" is NaN` });
+        }
     }
+    return Promise.resolve(true);
 };

@@ -9,7 +9,7 @@ const {
     checkCommentExists,
 } = require("../models/model-utils");
 const db = require("../db/connection");
-const { checkVotesIsNum } = require("../controllers/controller-utils");
+const { checkNums } = require("../controllers/controller-utils");
 
 afterAll(() => {
     db.end();
@@ -162,15 +162,15 @@ describe("checkCommentExists", () => {
     });
 });
 
-describe("checkVotesIsNum", () => {
+describe("checkNums", () => {
     test("Returns true if input is a number", () => {
-        return checkVotesIsNum(1).then((result) => {
+        return checkNums([1, 2, 3]).then((result) => {
             expect(result).toBe(true);
         });
     });
     test("Returns a rejected promise if votes is not a number", () => {
-        return checkVotesIsNum("one").catch((err) => {
-            expect(err).toEqual({ status: 400, msg: "inc_votes is NaN" });
+        return checkNums([1, "one"]).catch((err) => {
+            expect(err).toEqual({ status: 400, msg: '"one" is NaN' });
         });
     });
 });

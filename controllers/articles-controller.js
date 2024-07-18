@@ -3,22 +3,42 @@ const {
     selectArticleById,
     insertArticle,
     updateArticleById,
+    countArticles,
 } = require("../models/articles-model.js");
 const {
     checkArticleExists,
     checkUsernameExists,
 } = require("../models/model-utils.js");
-const { checkVotesIsNum } = require("./controller-utils.js");
+const { checkNums } = require("./controller-utils.js");
 
 exports.getArticles = (req, res, next) => {
-    let { topic, sort_by, order } = req.query;
+    let { topic, sort_by, order, limit, page } = req.query;
     if (sort_by) sort_by = sort_by.toLowerCase();
     if (order) order = order.toUpperCase();
     if (topic) topic = topic.toLowerCase();
 
-    selectArticles(topic, sort_by, order).then((articles) => {
-        res.status(200).send({ articles });
-    });
+    checkNums([limit, page])
+        .then(() => {
+            return countArticles(topic);
+        })
+        .then((result) => {
+            const articleCount = result.count;
+            let offset = page;
+
+            if (offset) offset = limit * (offset - 1) || offset;
+            if (limit <= 0) limit = 10;
+
+            const promiseArr = [
+                articleCount,
+                selectArticles(topic, sort_by, order, limit, offset),
+            ];
+            return Promise.all(promiseArr);
+        })
+        .then(([articleCount, articles]) => {
+            const articlesData = { articleCount, articles };
+            res.status(200).send({ articlesData });
+        })
+        .catch(next);
 };
 
 exports.getArticleById = (req, res, next) => {
@@ -51,10 +71,8 @@ exports.postArticle = (req, res, next) => {
 exports.patchArticleById = (req, res, next) => {
     const { article_id } = req.params;
     const { inc_votes } = req.body;
-    if (inc_votes && isNaN(inc_votes)) {
-        next({ status: 400, msg: "inc_votes is NaN" });
-    }
-    checkVotesIsNum(inc_votes)
+
+    checkNums([inc_votes])
         .then(() => {
             return checkArticleExists(article_id);
         })

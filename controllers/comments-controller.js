@@ -9,7 +9,7 @@ const {
     updateCommentById,
     deleteCommentById,
 } = require("../models/comments-model");
-const { checkVotesIsNum } = require("./controller-utils");
+const { checkNums } = require("./controller-utils");
 
 exports.getCommentsByArticleId = (req, res, next) => {
     const { article_id } = req.params;
@@ -47,7 +47,7 @@ exports.patchCommentById = (req, res, next) => {
     const { comment_id } = req.params;
     const { inc_votes } = req.body;
 
-    checkVotesIsNum(inc_votes)
+    checkNums([inc_votes])
         .then(() => {
             return checkCommentExists(comment_id);
         })
