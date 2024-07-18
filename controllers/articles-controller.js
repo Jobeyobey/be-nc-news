@@ -4,6 +4,7 @@ const {
     updateArticleById,
 } = require("../models/articles-model.js");
 const { checkArticleExists } = require("../models/model-utils.js");
+const { checkVotesIsNum } = require("./controller-utils.js");
 
 exports.getArticles = (req, res, next) => {
     let { topic, sort_by, order } = req.query;
@@ -33,8 +34,10 @@ exports.patchArticleById = (req, res, next) => {
     if (inc_votes && isNaN(inc_votes)) {
         next({ status: 400, msg: "inc_votes is NaN" });
     }
-
-    checkArticleExists(article_id)
+    checkVotesIsNum(inc_votes)
+        .then(() => {
+            return checkArticleExists(article_id);
+        })
         .then(() => {
             return updateArticleById(article_id, inc_votes);
         })

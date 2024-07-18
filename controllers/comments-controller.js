@@ -1,12 +1,15 @@
 const {
     checkArticleExists,
     checkUsernameExists,
+    checkCommentExists,
 } = require("../models/model-utils");
 const {
     selectCommentsByArticleId,
     insertCommentByArticleId,
+    updateCommentById,
     deleteCommentById,
 } = require("../models/comments-model");
+const { checkVotesIsNum } = require("./controller-utils");
 
 exports.getCommentsByArticleId = (req, res, next) => {
     const { article_id } = req.params;
@@ -38,6 +41,23 @@ exports.postCommentByArticleId = (req, res, next) => {
         .catch((err) => {
             next(err);
         });
+};
+
+exports.patchCommentById = (req, res, next) => {
+    const { comment_id } = req.params;
+    const { inc_votes } = req.body;
+
+    checkVotesIsNum(inc_votes)
+        .then(() => {
+            return checkCommentExists(comment_id);
+        })
+        .then(() => {
+            return updateCommentById(inc_votes, comment_id);
+        })
+        .then((comment) => {
+            res.status(200).send({ comment });
+        })
+        .catch(next);
 };
 
 exports.removeCommentById = (req, res, next) => {

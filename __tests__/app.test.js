@@ -391,33 +391,90 @@ describe("/api/articles/:article_id/comments", () => {
 });
 
 describe("/api/comments/:comment_id", () => {
-    test("DELETE204: successfully deletes comment by id, returning no content", () => {
-        return request(app)
-            .delete("/api/comments/5")
-            .expect(204)
-            .then(({ body }) => {
-                expect(body).toEqual({});
-                return db.query(`SELECT * FROM comments WHERE comment_id = 5`);
-            })
-            .then(({ rows }) => {
-                expect(rows).toHaveLength(0);
-            });
+    describe("PATCH", () => {
+        test("PATCH200: updates and returns the updated comment", () => {
+            return request(app)
+                .patch("/api/comments/2")
+                .send({ inc_votes: 1 })
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.comment).toEqual({
+                        comment_id: 2,
+                        body: "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+                        article_id: 1,
+                        author: "butter_bridge",
+                        votes: 15,
+                        created_at: "2020-10-31T03:03:00.000Z",
+                    });
+                });
+        });
+        test("PATCH400: responds with appropriate error and message if patch request body does not include a 'inv_votes' property", () => {
+            return request(app)
+                .patch("/api/comments/2")
+                .send({ increase_votes: 1 })
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("input can't be null or undefined");
+                });
+        });
+        test("PATCH400: responds with appropriate error and message if inc_votes property is NaN", () => {
+            return request(app)
+                .patch("/api/comments/2")
+                .send({ inc_votes: "ten" })
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("inc_votes is NaN");
+                });
+        });
+        test("PATCH400: responds with appropriate error and message if comment_id is not a valid id", () => {
+            return request(app)
+                .patch("/api/comments/not-an-id")
+                .send({ inc_votes: 1 })
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("invalid id");
+                });
+        });
+        test("PATCH404: responds with appropriate error and message if comment_id is valid but does not exist", () => {
+            return request(app)
+                .patch("/api/comments/98412")
+                .send({ inc_votes: 1 })
+                .then(({ body }) => {
+                    expect(body.msg).toBe("comment not found");
+                });
+        });
     });
-    test("DELETE400: responds with appropriate error message when comment_id is not a valid id", () => {
-        return request(app)
-            .delete("/api/comments/not-valid-id")
-            .expect(400)
-            .then(({ body }) => {
-                expect(body.msg).toBe("invalid id");
-            });
-    });
-    test("DELETE404: responds with appropriate error message when comment_id is valid but doesn't exist", () => {
-        return request(app)
-            .delete("/api/comments/98327")
-            .expect(404)
-            .then(({ body }) => {
-                expect(body.msg).toBe("comment not found");
-            });
+    describe("DELETE", () => {
+        test("DELETE204: successfully deletes comment by id, returning no content", () => {
+            return request(app)
+                .delete("/api/comments/5")
+                .expect(204)
+                .then(({ body }) => {
+                    expect(body).toEqual({});
+                    return db.query(
+                        `SELECT * FROM comments WHERE comment_id = 5`
+                    );
+                })
+                .then(({ rows }) => {
+                    expect(rows).toHaveLength(0);
+                });
+        });
+        test("DELETE400: responds with appropriate error message when comment_id is not a valid id", () => {
+            return request(app)
+                .delete("/api/comments/not-valid-id")
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("invalid id");
+                });
+        });
+        test("DELETE404: responds with appropriate error message when comment_id is valid but doesn't exist", () => {
+            return request(app)
+                .delete("/api/comments/98327")
+                .expect(404)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("comment not found");
+                });
+        });
     });
 });
 
