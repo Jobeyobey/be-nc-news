@@ -19,25 +19,14 @@ exports.getArticles = (req, res, next) => {
 
     checkNums([limit, page])
         .then(() => {
-            return countArticles(topic);
+            return Promise.all([
+                countArticles(topic),
+                selectArticles(topic, sort_by, order, limit, page),
+            ]);
         })
-        .then((result) => {
-            const articleCount = result.count;
-            let offset = page;
-
-            if (offset) offset = limit * (offset - 1) || offset;
-            if (limit <= 0) limit = 10;
-
-            const promiseArr = [
-                articleCount,
-                selectArticles(topic, sort_by, order, limit, offset),
-            ];
-            return Promise.all(promiseArr);
-        })
-        .then(([articleCount, articles]) => {
-            const articlesData = { articleCount, articles };
-            res.status(200).send({ articlesData });
-        })
+        .then(([articleCount, articles]) =>
+            res.status(200).send({ articleCount, articles })
+        )
         .catch(next);
 };
 
