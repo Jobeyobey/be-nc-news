@@ -1,6 +1,13 @@
 const db = require("../db/connection");
 
-exports.selectArticles = (topic, sort_by, order, limit = 10, page) => {
+exports.selectArticles = (
+    topic,
+    sort_by,
+    order,
+    limit = 10,
+    page,
+    article_count
+) => {
     const queries = [];
     const sortGreenList = [
         "article_id",
@@ -43,17 +50,20 @@ exports.selectArticles = (topic, sort_by, order, limit = 10, page) => {
                     ORDER BY ${sort_by} ${order}
                     LIMIT ${limit}`;
 
+    if (page <= 0) page = 0;
     let offset = page;
     if (offset) {
         offset = limit * (offset - 1);
+
+        // if offset takes us past last page, set offset to show last page
+        if (offset >= article_count) {
+            offset = article_count - (article_count % limit);
+        }
         selectQuery += ` OFFSET ${offset}`;
     }
 
     return db.query(selectQuery, queries).then(({ rows }) => {
-        if (rows.length === 0) {
-            return Promise.reject({ status: 404, msg: "no articles found" });
-        }
-        return rows;
+        return Promise.all([rows, article_count]);
     });
 };
 
