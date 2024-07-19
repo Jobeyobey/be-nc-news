@@ -43,14 +43,13 @@ describe("/api/topics", () => {
 
 describe("/api/articles", () => {
     describe("GET", () => {
-        test("GET200: Returns an articlesData object, with an 'articles' property that is an array, and an 'articlesCount' that is an integer", () => {
+        test("GET200: Returns an object, with an 'articles' property that is an array, and an 'articlesCount' that is an integer", () => {
             return request(app)
                 .get("/api/articles")
                 .expect(200)
                 .then(({ body }) => {
-                    const articlesData = body.articlesData;
-                    expect(Array.isArray(articlesData.articles)).toBe(true);
-                    expect(isNaN(articlesData.articleCount)).toBe(false);
+                    expect(Array.isArray(body.articles)).toBe(true);
+                    expect(isNaN(body.articleCount)).toBe(false);
                 });
         });
         test("GET200: articles array contains articles objects, default limited to 10. Each article has the following properties: author, title, article_id, topic, created_at, votes, article_img_url, comment_count", () => {
@@ -58,7 +57,7 @@ describe("/api/articles", () => {
                 .get("/api/articles")
                 .expect(200)
                 .then(({ body }) => {
-                    const articles = body.articlesData.articles;
+                    const articles = body.articles;
                     expect(articles).toHaveLength(10);
                     articles.forEach((article) => {
                         expect(article).toEqual({
@@ -79,7 +78,7 @@ describe("/api/articles", () => {
                 .get("/api/articles")
                 .expect(200)
                 .then(({ body }) => {
-                    body.articlesData.articles.forEach((article) => {
+                    body.articles.forEach((article) => {
                         switch (article.article_id) {
                             case 1:
                                 expect(article.comment_count).toBe(11);
@@ -107,12 +106,9 @@ describe("/api/articles", () => {
                 .get("/api/articles")
                 .expect(200)
                 .then(({ body }) => {
-                    expect(body.articlesData.articles).toBeSortedBy(
-                        "created_at",
-                        {
-                            descending: true,
-                        }
-                    );
+                    expect(body.articles).toBeSortedBy("created_at", {
+                        descending: true,
+                    });
                 });
         });
         test("GET200: articlesData.articlesCount is equal to the total number of articles in the database that match the query", () => {});
@@ -215,7 +211,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?topic=mitch")
                 .expect(200)
                 .then(({ body }) => {
-                    const articles = body.articlesData.articles;
+                    const articles = body.articles;
                     expect(articles).toHaveLength(10);
                     articles.forEach((article) => {
                         expect(article.topic).toBe("mitch");
@@ -235,7 +231,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?sort_by=votes")
                 .expect(200)
                 .then(({ body }) => {
-                    expect(body.articlesData.articles).toBeSortedBy("votes", {
+                    expect(body.articles).toBeSortedBy("votes", {
                         descending: true,
                     });
                 });
@@ -245,9 +241,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?order=asc")
                 .expect(200)
                 .then(({ body }) => {
-                    expect(body.articlesData.articles).toBeSortedBy(
-                        "created_at"
-                    );
+                    expect(body.articles).toBeSortedBy("created_at");
                 });
         });
         test("GET200: including an invalid 'order_by' query defaults to order by descending", () => {
@@ -255,7 +249,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?sort_by=author&order=tallest-first")
                 .expect(200)
                 .then(({ body }) => {
-                    expect(body.articlesData.articles).toBeSortedBy("author", {
+                    expect(body.articles).toBeSortedBy("author", {
                         descending: true,
                     });
                 });
@@ -265,9 +259,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?sort_by=popular&order=asc")
                 .expect(200)
                 .then(({ body }) => {
-                    expect(body.articlesData.articles).toBeSortedBy(
-                        "created_at"
-                    );
+                    expect(body.articles).toBeSortedBy("created_at");
                 });
         });
         test("GET200: including a 'limit' query limits returned articles to that number", () => {
@@ -275,7 +267,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?limit=5")
                 .expect(200)
                 .then(({ body }) => {
-                    expect(body.articlesData.articles).toHaveLength(5);
+                    expect(body.articles).toHaveLength(5);
                 });
         });
         test("GET200: defaults 'limit' to 10 if 'limit' is not a positive number", () => {
@@ -283,7 +275,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?limit=0")
                 .expect(200)
                 .then(({ body }) => {
-                    expect(body.articlesData.articles).toHaveLength(10);
+                    expect(body.articles).toHaveLength(10);
                 });
         });
         test("GET200: including a 'page' query specifies the page at which to start, calculated using limit. (e.g. limit 5, page 2, would begin at article 6)", () => {
@@ -291,7 +283,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?limit=3&page=4")
                 .expect(200)
                 .then(({ body }) => {
-                    const articles = body.articlesData.articles;
+                    const articles = body.articles;
                     expect(articles[0].article_id).toBe(4);
                     expect(articles[1].article_id).toBe(8);
                     expect(articles[2].article_id).toBe(11);

@@ -9,11 +9,11 @@ exports.countArticles = (topic) => {
     }
 
     return db.query(selectQuery, params).then(({ rows }) => {
-        return rows[0];
+        return rows[0].count;
     });
 };
 
-exports.selectArticles = (topic, sort_by, order, limit = 10, offset) => {
+exports.selectArticles = (topic, sort_by, order, limit = 10, page) => {
     const queries = [];
     const sortGreenList = [
         "article_id",
@@ -51,10 +51,14 @@ exports.selectArticles = (topic, sort_by, order, limit = 10, offset) => {
         queries.push(topic);
     }
 
+    if (limit <= 0) limit = 10;
     selectQuery += ` GROUP BY articles.article_id
                     ORDER BY ${sort_by} ${order}
                     LIMIT ${limit}`;
+
+    let offset = page;
     if (offset) {
+        offset = limit * (offset - 1);
         selectQuery += ` OFFSET ${offset}`;
     }
 
