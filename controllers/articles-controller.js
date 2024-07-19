@@ -3,6 +3,7 @@ const {
     selectArticleById,
     insertArticle,
     updateArticleById,
+    deleteArticleById,
 } = require("../models/articles-model.js");
 const {
     countArticles,
@@ -71,5 +72,13 @@ exports.patchArticleById = (req, res, next) => {
         .then((article) => {
             res.status(200).send({ article });
         })
+        .catch(next);
+};
+
+exports.removeArticleById = (req, res, next) => {
+    const { article_id } = req.params;
+    checkArticleExists(article_id)
+        .then(() => deleteArticleById(article_id))
+        .then(() => res.status(204).send())
         .catch(next);
 };
