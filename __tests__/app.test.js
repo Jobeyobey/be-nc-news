@@ -49,7 +49,7 @@ describe("/api/articles", () => {
                 .expect(200)
                 .then(({ body }) => {
                     expect(Array.isArray(body.articles)).toBe(true);
-                    expect(isNaN(body.articleCount)).toBe(false);
+                    expect(isNaN(body.article_count)).toBe(false);
                 });
         });
         test("GET200: articles array contains articles objects, default limited to 10. Each article has the following properties: author, title, article_id, topic, created_at, votes, article_img_url, comment_count", () => {
@@ -218,12 +218,12 @@ describe("/api/articles", () => {
                     });
                 });
         });
-        test("GET404: returns an error when searching for a valid but not-existing 'topic'", () => {
+        test("GET404: returns an error when searching for a topic that doesn't exist", () => {
             return request(app)
                 .get("/api/articles?topic=aliens")
                 .expect(404)
                 .then(({ body }) => {
-                    expect(body.msg).toBe("no articles found");
+                    expect(body.msg).toBe("topic not found");
                 });
         });
         test("GET200: including a 'sort_by' query for a valid column returns articles in descending order of that column", () => {
@@ -272,10 +272,18 @@ describe("/api/articles", () => {
         });
         test("GET200: defaults 'limit' to 10 if 'limit' is not a positive number", () => {
             return request(app)
-                .get("/api/articles?limit=0")
+                .get("/api/articles?limit=-1")
                 .expect(200)
                 .then(({ body }) => {
                     expect(body.articles).toHaveLength(10);
+                });
+        });
+        test("GET400: returns an appropriate error and message when 'limit' is not an integer", () => {
+            return request(app)
+                .get("/api/articles?limit=ten")
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe('"ten" is NaN');
                 });
         });
         test("GET200: including a 'page' query specifies the page at which to start, calculated using limit. (e.g. limit 5, page 2, would begin at article 6)", () => {
@@ -289,12 +297,41 @@ describe("/api/articles", () => {
                     expect(articles[2].article_id).toBe(11);
                 });
         });
-        test("GET404: returns an appropriate error and message when including a 'page' query that takes the user past the last page of available articles", () => {
+        test("GET200: defaults 'page' to 0 if 'page' is not a positive integer", () => {
             return request(app)
-                .get("/api/articles?page=90")
-                .expect(404)
+                .get("/api/articles?page=-1")
+                .expect(200)
                 .then(({ body }) => {
-                    expect(body.msg).toBe("no articles found");
+                    const articles = body.articles;
+                    expect(articles[0].article_id).toBe(3);
+                    expect(articles[1].article_id).toBe(6);
+                    expect(articles[2].article_id).toBe(2);
+                    expect(articles[3].article_id).toBe(12);
+                    expect(articles[4].article_id).toBe(13);
+                    expect(articles[5].article_id).toBe(5);
+                    expect(articles[6].article_id).toBe(1);
+                    expect(articles[7].article_id).toBe(9);
+                    expect(articles[8].article_id).toBe(10);
+                    expect(articles[9].article_id).toBe(4);
+                });
+        });
+        test("GET200: returns last page of articles when 'page' query takes user past total number of articles", () => {
+            return request(app)
+                .get("/api/articles?page=999")
+                .expect(200)
+                .then(({ body }) => {
+                    const articles = body.articles;
+                    expect(articles[0].article_id).toBe(8);
+                    expect(articles[1].article_id).toBe(11);
+                    expect(articles[2].article_id).toBe(7);
+                });
+        });
+        test("GET400: returns an appropriate error and message when 'page' is not an integer", () => {
+            return request(app)
+                .get("/api/articles?page=two")
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe('"two" is NaN');
                 });
         });
     });

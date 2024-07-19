@@ -1,15 +1,20 @@
 const db = require("../db/connection");
 
-exports.countArticles = (topic) => {
-    const params = [];
-    let selectQuery = `SELECT count(*) FROM articles`;
+exports.checkTopicExists = (topic) => {
+    queries = [];
+    let selectQuery = `SELECT * FROM topics`;
+
     if (topic) {
-        selectQuery += ` WHERE topic = $1`;
-        params.push(topic);
+        selectQuery += ` WHERE slug = $1`;
+        queries.push(topic);
     }
 
-    return db.query(selectQuery, params).then(({ rows }) => {
-        return rows[0].count;
+    return db.query(selectQuery, queries).then(({ rows }) => {
+        if (rows.length === 0) {
+            return Promise.reject({ status: 404, msg: "topic not found" });
+        } else {
+            return true;
+        }
     });
 };
 
@@ -58,9 +63,22 @@ exports.checkCommentExists = (comment_id) => {
         });
 };
 
+exports.countArticles = (topic) => {
+    const params = [];
+    let selectQuery = `SELECT count(*)::INT FROM articles`;
+    if (topic) {
+        selectQuery += ` WHERE topic = $1`;
+        params.push(topic);
+    }
+
+    return db.query(selectQuery, params).then(({ rows }) => {
+        return rows[0].count;
+    });
+};
+
 exports.countComments = (article_id) => {
     const params = [];
-    let selectQuery = `SELECT count(*) FROM comments`;
+    let selectQuery = `SELECT count(*)::INT FROM comments`;
     if (article_id) {
         selectQuery += ` WHERE article_id = $1`;
         params.push(article_id);

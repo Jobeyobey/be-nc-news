@@ -8,6 +8,7 @@ const {
     countArticles,
     checkArticleExists,
     checkUsernameExists,
+    checkTopicExists,
 } = require("../models/model-utils.js");
 const { checkNums } = require("./controller-utils.js");
 
@@ -18,14 +19,13 @@ exports.getArticles = (req, res, next) => {
     if (topic) topic = topic.toLowerCase();
 
     checkNums([limit, page])
-        .then(() => {
-            return Promise.all([
-                countArticles(topic),
-                selectArticles(topic, sort_by, order, limit, page),
-            ]);
-        })
-        .then(([articleCount, articles]) =>
-            res.status(200).send({ articleCount, articles })
+        .then(() => checkTopicExists(topic))
+        .then(() => countArticles(topic))
+        .then((article_count) =>
+            selectArticles(topic, sort_by, order, limit, page, article_count)
+        )
+        .then(([articles, article_count]) =>
+            res.status(200).send({ articles, article_count })
         )
         .catch(next);
 };

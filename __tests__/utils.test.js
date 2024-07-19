@@ -7,6 +7,7 @@ const {
     checkArticleExists,
     checkUsernameExists,
     checkCommentExists,
+    checkTopicExists,
 } = require("../models/model-utils");
 const db = require("../db/connection");
 const { checkNums } = require("../controllers/controller-utils");
@@ -111,6 +112,22 @@ describe("formatComments", () => {
         const comments = [{ created_at: timestamp }];
         const formattedComments = formatComments(comments, {});
         expect(formattedComments[0].created_at).toEqual(new Date(timestamp));
+    });
+});
+
+describe("checkTopicExists", () => {
+    test("Returns true if topic exists", () => {
+        return checkTopicExists("mitch").then((result) => {
+            expect(result).toBe(true);
+        });
+    });
+    test("Throws a 404 error if topic does not exist", () => {
+        return checkTopicExists("forbidden-topics").catch((err) => {
+            expect(err).toEqual({
+                status: 404,
+                msg: "topic not found",
+            });
+        });
     });
 });
 
