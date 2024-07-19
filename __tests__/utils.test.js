@@ -8,6 +8,8 @@ const {
     checkUsernameExists,
     checkCommentExists,
     checkTopicExists,
+    countArticles,
+    countComments,
 } = require("../models/model-utils");
 const db = require("../db/connection");
 const { checkNums } = require("../controllers/controller-utils");
@@ -188,6 +190,27 @@ describe("checkNums", () => {
     test("Returns a rejected promise if votes is not a number", () => {
         return checkNums([1, "one"]).catch((err) => {
             expect(err).toEqual({ status: 400, msg: '"one" is NaN' });
+        });
+    });
+});
+
+describe("countArticles", () => {
+    test("returns count of all articles when not given a topic to filter by", () => {
+        return countArticles().then((articleCount) => {
+            expect(articleCount).toBe(13);
+        });
+    });
+    test("returns correct count of articles when given a topic to filter by", () => {
+        return countArticles("mitch").then((articleCount) => {
+            expect(articleCount).toBe(12);
+        });
+    });
+});
+
+describe("countComments", () => {
+    test("returns count of all comments of given article", () => {
+        return countComments(1).then((commentCount) => {
+            expect(commentCount).toBe(11);
         });
     });
 });
