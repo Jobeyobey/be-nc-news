@@ -19,11 +19,9 @@ exports.getCommentsByArticleId = (req, res, next) => {
     checkNums([limit, page])
         .then(() => checkArticleExists(article_id))
         .then(() => countComments(article_id))
-        .then((comment_count) =>
-            selectCommentsByArticleId(article_id, limit, page, comment_count)
-        )
+        .then((comment_count) => selectCommentsByArticleId(article_id, limit, page, comment_count))
         .then(([comments, comment_count]) => {
-            res.status(200).send({ comments, comment_count });
+            res.status(200).send({ comments, comment_count })
         })
         .catch(next);
 };
@@ -33,19 +31,12 @@ exports.postCommentByArticleId = (req, res, next) => {
     const { username, body } = req.body;
 
     checkArticleExists(article_id)
-        .then(() => {
-            return checkUsernameExists(username);
-        })
-        .then(() => {
-            const commentToPost = [article_id, username, body];
-            return insertCommentByArticleId(commentToPost);
-        })
+        .then(() => checkUsernameExists(username))
+        .then(() => insertCommentByArticleId([article_id, username, body]))
         .then((comment) => {
-            res.status(201).send({ comment });
+            res.status(201).send({ comment })
         })
-        .catch((err) => {
-            next(err);
-        });
+        .catch(next);
 };
 
 exports.patchCommentById = (req, res, next) => {
@@ -53,14 +44,10 @@ exports.patchCommentById = (req, res, next) => {
     const { inc_votes } = req.body;
 
     checkNums([inc_votes])
-        .then(() => {
-            return checkCommentExists(comment_id);
-        })
-        .then(() => {
-            return updateCommentById(inc_votes, comment_id);
-        })
+        .then(() => checkCommentExists(comment_id))
+        .then(() => updateCommentById(inc_votes, comment_id))
         .then((comment) => {
-            res.status(200).send({ comment });
+            res.status(200).send({ comment })
         })
         .catch(next);
 };
@@ -69,7 +56,7 @@ exports.removeCommentById = (req, res, next) => {
     const { comment_id } = req.params;
     deleteCommentById(comment_id)
         .then(() => {
-            res.status(204).send();
+            res.status(204).send()
         })
         .catch(next);
 };
