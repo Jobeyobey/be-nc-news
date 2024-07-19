@@ -481,6 +481,45 @@ describe("/api/articles/:article_id", () => {
                 });
         });
     });
+    describe("DELETE", () => {
+        test("DELETE204: successfully deletes the article and its respective comments, returning no content", () => {
+            return request(app)
+                .delete("/api/articles/1")
+                .expect(204)
+                .then(({ body }) => {
+                    expect(body).toEqual({});
+                })
+                .then(() => {
+                    const articleQuery = db
+                        .query("SELECT * FROM articles WHERE article_id = 1")
+                        .then(({ rows }) => rows);
+                    const commentQuery = db
+                        .query("SELECT * FROM comments WHERE article_id = 1")
+                        .then(({ rows }) => rows);
+                    return Promise.all([articleQuery, commentQuery]);
+                })
+                .then(([articleQuery, commentQuery]) => {
+                    expect(articleQuery).toHaveLength(0);
+                    expect(commentQuery).toHaveLength(0);
+                });
+        });
+        test("DELETE400: responds with appropriate error message when article_id is not a valid id", () => {
+            return request(app)
+                .delete("/api/articles/not-an-id")
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("invalid id");
+                });
+        });
+        test("DELETE404: responds with an appropriate error and message when article_id is valid but does not exist", () => {
+            return request(app)
+                .delete("/api/articles/999")
+                .expect(404)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("article id not found");
+                });
+        });
+    });
 });
 
 describe("/api/articles/:article_id/comments", () => {
