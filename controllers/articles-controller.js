@@ -22,22 +22,19 @@ exports.getArticles = (req, res, next) => {
     checkNums([limit, page])
         .then(() => checkTopicExists(topic))
         .then(() => countArticles(topic))
-        .then((article_count) =>
-            selectArticles(topic, sort_by, order, limit, page, article_count)
-        )
-        .then(([articles, article_count]) =>
+        .then((article_count) => selectArticles(topic, sort_by, order, limit, page, article_count))
+        .then(([articles, article_count]) => {
             res.status(200).send({ articles, article_count })
-        )
+        })
         .catch(next);
 };
 
 exports.getArticleById = (req, res, next) => {
     const { article_id } = req.params;
     checkArticleExists(article_id)
-        .then(() => {
-            selectArticleById(article_id).then((article) => {
-                res.status(200).send({ article });
-            });
+        .then(() => selectArticleById(article_id))
+        .then((article) => {
+            res.status(200).send({ article })
         })
         .catch(next);
 };
@@ -46,14 +43,10 @@ exports.postArticle = (req, res, next) => {
     const { title, topic, author, body, article_img_url } = req.body;
 
     checkUsernameExists(author)
-        .then(() => {
-            return insertArticle(title, topic, author, body, article_img_url);
-        })
-        .then((postedArticle) => {
-            return selectArticleById(postedArticle.article_id);
-        })
+        .then(() => insertArticle(title, topic, author, body, article_img_url))
+        .then((postedArticle) => selectArticleById(postedArticle.article_id))
         .then((article) => {
-            res.status(201).send({ article });
+            res.status(201).send({ article })
         })
         .catch(next);
 };
@@ -63,14 +56,10 @@ exports.patchArticleById = (req, res, next) => {
     const { inc_votes } = req.body;
 
     checkNums([inc_votes])
-        .then(() => {
-            return checkArticleExists(article_id);
-        })
-        .then(() => {
-            return updateArticleById(article_id, inc_votes);
-        })
+        .then(() => checkArticleExists(article_id))
+        .then(() => updateArticleById(article_id, inc_votes))
         .then((article) => {
-            res.status(200).send({ article });
+            res.status(200).send({ article })
         })
         .catch(next);
 };
@@ -79,6 +68,8 @@ exports.removeArticleById = (req, res, next) => {
     const { article_id } = req.params;
     checkArticleExists(article_id)
         .then(() => deleteArticleById(article_id))
-        .then(() => res.status(204).send())
+        .then(() => {
+            res.status(204).send()
+        })
         .catch(next);
 };

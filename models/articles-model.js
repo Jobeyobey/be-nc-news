@@ -20,12 +20,8 @@ exports.selectArticles = (
     ];
     const orderGreenList = ["ASC", "DESC"];
 
-    if (!sortGreenList.includes(sort_by)) {
-        sort_by = "created_at";
-    }
-    if (!orderGreenList.includes(order)) {
-        order = "DESC";
-    }
+    if (!sortGreenList.includes(sort_by)) sort_by = "created_at";
+    if (!orderGreenList.includes(order)) order = "DESC";
 
     let selectQuery = `SELECT
                 articles.author,

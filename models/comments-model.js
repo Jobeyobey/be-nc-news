@@ -16,8 +16,8 @@ exports.selectCommentsByArticleId = (
                 LIMIT $2`;
 
     if (limit <= 0) limit = 10;
-    if (page <= 0) page = 0;
 
+    if (page <= 0) page = 0;
     let offset = page;
     if (offset) {
         offset = limit * (offset - 1);
