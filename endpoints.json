@@ -9,6 +9,13 @@
             "topics": [{ "slug": "football", "description": "Footie!" }]
         }
     },
+    "POST /api/topics": {
+        "description": "posts a topic to the topics table",
+        "queries": {},
+        "exampleResponse": {
+            "topics": { "slug": "football", "description": "Footie!" }
+        }
+    },
     "GET /api/articles": {
         "description": "serves an an object with an array of articles and article count property",
         "queries": {
