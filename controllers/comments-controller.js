@@ -22,8 +22,8 @@ exports.getCommentsByArticleId = (req, res, next) => {
         .then((comment_count) =>
             selectCommentsByArticleId(article_id, limit, page, comment_count)
         )
-        .then((comments) => {
-            res.status(200).send({ comments });
+        .then(([comments, comment_count]) => {
+            res.status(200).send({ comments, comment_count });
         })
         .catch(next);
 };
