@@ -6,7 +6,6 @@ exports.selectCommentsByArticleId = (
     page,
     comment_count
 ) => {
-    const queries = [article_id, limit];
     let selectQuery = `
                 SELECT comments.*
                 FROM comments
@@ -31,7 +30,7 @@ exports.selectCommentsByArticleId = (
     }
 
     return db.query(selectQuery, [article_id, limit]).then(({ rows }) => {
-        return rows;
+        return Promise.all([rows, comment_count]);
     });
 };
 

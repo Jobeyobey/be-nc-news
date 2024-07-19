@@ -43,13 +43,13 @@ describe("/api/topics", () => {
 
 describe("/api/articles", () => {
     describe("GET", () => {
-        test("GET200: Returns an object, with an 'articles' property that is an array, and an 'articlesCount' that is an integer", () => {
+        test("GET200: Returns an object, with an 'articles' property that is an array, and an 'articles_count' that is an integer, representing the total count of articles matching available", () => {
             return request(app)
                 .get("/api/articles")
                 .expect(200)
                 .then(({ body }) => {
                     expect(Array.isArray(body.articles)).toBe(true);
-                    expect(isNaN(body.article_count)).toBe(false);
+                    expect(body.article_count).toBe(13);
                 });
         });
         test("GET200: articles array contains articles objects, default limited to 10. Each article has the following properties: author, title, article_id, topic, created_at, votes, article_img_url, comment_count", () => {
@@ -436,7 +436,16 @@ describe("/api/articles/:article_id", () => {
 
 describe("/api/articles/:article_id/comments", () => {
     describe("GET", () => {
-        test("GET200: sends an array of comments (default limited to 10) for the given article_id to the client, each with the following properties: comment_id, votes, created_at, author, body, article_id", () => {
+        test("GET200: Returns an object, with an 'comments' property that is an array, and an 'comment_count' that is an integer representing the total comments on that article", () => {
+            return request(app)
+                .get("/api/articles/1/comments")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(Array.isArray(body.comments)).toBe(true);
+                    expect(body.comment_count).toBe(11);
+                });
+        });
+        test("GET200: 'comments' is an array of comment objects (default limited to 10) for the given article_id, each with the following properties: comment_id, votes, created_at, author, body, article_id", () => {
             return request(app)
                 .get("/api/articles/1/comments")
                 .expect(200)
