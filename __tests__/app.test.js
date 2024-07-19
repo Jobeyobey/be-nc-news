@@ -868,6 +868,12 @@ describe("/api/users/:username", () => {
 
 describe("Generic error handling", () => {
     test("GET404: should respond with a 404 error if endpoint doesn't exist", () => {
-        return request(app).get("/api/no-endpoint").expect(404);
+        return request(app)
+            .get("/api/no-endpoint")
+            .expect(404)
+            .then(({ body }) => {
+                console.log(body);
+                expect(body.msg).toBe("404: Endpoint not found");
+            });
     });
 });
