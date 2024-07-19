@@ -25,19 +25,68 @@ describe("/api", () => {
 });
 
 describe("/api/topics", () => {
-    test("GET200: Sends an array of all topics to the client, each topic with properties: slug, description", () => {
-        return request(app)
-            .get("/api/topics")
-            .expect(200)
-            .then(({ body }) => {
-                expect(body.topics).toHaveLength(3);
-                body.topics.forEach((topic) => {
-                    expect(topic).toMatchObject({
-                        description: expect.any(String),
-                        slug: expect.any(String),
+    describe("GET", () => {
+        test("GET200: Sends an array of all topics to the client, each topic with properties: slug, description", () => {
+            return request(app)
+                .get("/api/topics")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.topics).toHaveLength(3);
+                    body.topics.forEach((topic) => {
+                        expect(topic).toMatchObject({
+                            description: expect.any(String),
+                            slug: expect.any(String),
+                        });
                     });
                 });
-            });
+        });
+    });
+    describe("POST", () => {
+        test("POST201: responds with the newly created topic object, matching the posted object", () => {
+            return request(app)
+                .post("/api/topics")
+                .send({
+                    slug: "northcoders",
+                    description: "all about Northcoders",
+                })
+                .expect(201)
+                .then(({ body }) => {
+                    expect(body.topic).toEqual({
+                        slug: "northcoders",
+                        description: "all about Northcoders",
+                    });
+                });
+        });
+        test("POST201: allows posting a new topic without a description", () => {
+            return request(app)
+                .post("/api/topics")
+                .send({ slug: "indescribable" })
+                .expect(201)
+                .then(({ body }) => {
+                    expect(body.topic).toEqual({
+                        slug: "indescribable",
+                        description: null,
+                    });
+                });
+        });
+        test("POST400: responds with an appropriate error and message when attempting to post without a slug property", () => {
+            return request(app)
+                .post("/api/topics")
+                .send({ desciption: "no slug" })
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("input can't be null or undefined");
+                });
+        });
+        test("POST400: responds with an appropriate error and message when attempting to post without a valid slug value", () => {
+            return request(app)
+                .post("/api/topics")
+                .send({ slug: "", description: "sneaky" })
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe("slug must contain text");
+                });
+        });
     });
 });
 
