@@ -2,6 +2,7 @@ const {
     checkArticleExists,
     checkUsernameExists,
     checkCommentExists,
+    countComments,
 } = require("../models/model-utils");
 const {
     selectCommentsByArticleId,
@@ -13,10 +14,14 @@ const { checkNums } = require("./controller-utils");
 
 exports.getCommentsByArticleId = (req, res, next) => {
     const { article_id } = req.params;
-    checkArticleExists(article_id)
-        .then(() => {
-            return selectCommentsByArticleId(article_id);
-        })
+    const { limit, page } = req.query;
+
+    checkNums([limit, page])
+        .then(() => checkArticleExists(article_id))
+        .then(() => countComments(article_id))
+        .then((comment_count) =>
+            selectCommentsByArticleId(article_id, limit, page, comment_count)
+        )
         .then((comments) => {
             res.status(200).send({ comments });
         })

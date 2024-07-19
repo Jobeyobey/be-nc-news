@@ -3,9 +3,9 @@ const {
     selectArticleById,
     insertArticle,
     updateArticleById,
-    countArticles,
 } = require("../models/articles-model.js");
 const {
+    countArticles,
     checkArticleExists,
     checkUsernameExists,
 } = require("../models/model-utils.js");

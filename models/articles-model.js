@@ -1,18 +1,5 @@
 const db = require("../db/connection");
 
-exports.countArticles = (topic) => {
-    const params = [];
-    let selectQuery = `SELECT count(*) FROM ARTICLES`;
-    if (topic) {
-        selectQuery += ` WHERE topic = $1`;
-        params.push(topic);
-    }
-
-    return db.query(selectQuery, params).then(({ rows }) => {
-        return rows[0].count;
-    });
-};
-
 exports.selectArticles = (topic, sort_by, order, limit = 10, page) => {
     const queries = [];
     const sortGreenList = [
