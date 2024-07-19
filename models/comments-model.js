@@ -1,19 +1,38 @@
 const db = require("../db/connection");
 
-exports.selectCommentsByArticleId = (article_id) => {
-    return db
-        .query(
-            `SELECT comments.*
-             FROM comments
-             LEFT JOIN articles
-             ON comments.article_id = articles.article_id
-             WHERE comments.article_id = $1
-             ORDER BY created_at DESC`,
-            [article_id]
-        )
-        .then(({ rows }) => {
-            return rows;
-        });
+exports.selectCommentsByArticleId = (
+    article_id,
+    limit = 10,
+    page,
+    comment_count
+) => {
+    const queries = [article_id, limit];
+    let selectQuery = `
+                SELECT comments.*
+                FROM comments
+                LEFT JOIN articles
+                ON comments.article_id = articles.article_id
+                WHERE comments.article_id = $1
+                ORDER BY created_at DESC
+                LIMIT $2`;
+
+    if (limit <= 0) limit = 10;
+    if (page <= 0) page = 0;
+
+    let offset = page;
+    if (offset) {
+        offset = limit * (offset - 1);
+
+        // if offset takes us past last page, set offset to show last page
+        if (offset >= comment_count) {
+            offset = comment_count - (comment_count % limit);
+        }
+        selectQuery += ` OFFSET ${offset}`;
+    }
+
+    return db.query(selectQuery, [article_id, limit]).then(({ rows }) => {
+        return rows;
+    });
 };
 
 exports.insertCommentByArticleId = (commentToPost) => {

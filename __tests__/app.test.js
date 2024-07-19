@@ -399,12 +399,12 @@ describe("/api/articles/:article_id", () => {
 
 describe("/api/articles/:article_id/comments", () => {
     describe("GET", () => {
-        test("GET200: sends an array of all comments for the given article_id to the client, each with the following properties: comment_id, votes, created_at, author, body, article_id", () => {
+        test("GET200: sends an array of comments (default limited to 10) for the given article_id to the client, each with the following properties: comment_id, votes, created_at, author, body, article_id", () => {
             return request(app)
                 .get("/api/articles/1/comments")
                 .expect(200)
                 .then(({ body }) => {
-                    expect(body.comments).toHaveLength(11);
+                    expect(body.comments).toHaveLength(10);
                     body.comments.forEach((comment) => {
                         expect(comment).toEqual({
                             comment_id: expect.any(Number),
@@ -526,6 +526,77 @@ describe("/api/articles/:article_id/comments", () => {
                 .expect(404)
                 .then(({ body }) => {
                     expect(body.msg).toBe("username not found");
+                });
+        });
+    });
+    describe("Comment queries", () => {
+        test("GET200: including a 'limit' query limits returned comments to that number", () => {
+            return request(app)
+                .get("/api/articles/1/comments?limit=5")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.comments).toHaveLength(5);
+                });
+        });
+        test("GET200: defaults 'limit' to 10 if 'limit' is not a positive integer", () => {
+            return request(app)
+                .get("/api/articles/1/comments?limit=-1")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.comments).toHaveLength(10);
+                });
+        });
+        test("GET400: returns appropriate error and message when 'limit' is not an integer", () => {
+            return request(app)
+                .get("/api/articles/1/comments?limit=five")
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe('"five" is NaN');
+                });
+        });
+        test("GET200: including a 'page' query specifies the page at which to start, calculated using limit. (e.g. limit 5, page 2, would begin at comment 6)", () => {
+            return request(app)
+                .get("/api/articles/1/comments?limit=3&page=3")
+                .expect(200)
+                .then(({ body }) => {
+                    const comments = body.comments;
+                    expect(comments[0].comment_id).toBe(6);
+                    expect(comments[1].comment_id).toBe(12);
+                    expect(comments[2].comment_id).toBe(3);
+                });
+        });
+        test("GET200: defaults 'page' to 0 if 'page' is not a positive integer", () => {
+            return request(app)
+                .get("/api/articles/1/comments?page=-1")
+                .expect(200)
+                .then(({ body }) => {
+                    const comments = body.comments;
+                    expect(comments[0].comment_id).toBe(5);
+                    expect(comments[1].comment_id).toBe(2);
+                    expect(comments[2].comment_id).toBe(18);
+                    expect(comments[3].comment_id).toBe(13);
+                    expect(comments[4].comment_id).toBe(7);
+                    expect(comments[5].comment_id).toBe(8);
+                    expect(comments[6].comment_id).toBe(6);
+                    expect(comments[7].comment_id).toBe(12);
+                    expect(comments[8].comment_id).toBe(3);
+                    expect(comments[9].comment_id).toBe(4);
+                });
+        });
+        test("GET200: returns last page of comments when 'page' query takes user past total number of comments", () => {
+            return request(app)
+                .get("/api/articles/1/comments?page=9999")
+                .expect(200)
+                .then(({ body }) => {
+                    expect(body.comments[0].comment_id).toBe(9);
+                });
+        });
+        test("GET400: returns an appropriate error and message when 'page' is not an integer", () => {
+            return request(app)
+                .get("/api/articles/1/comments?page=two")
+                .expect(400)
+                .then(({ body }) => {
+                    expect(body.msg).toBe('"two" is NaN');
                 });
         });
     });

@@ -1,5 +1,18 @@
 const db = require("../db/connection");
 
+exports.countArticles = (topic) => {
+    const params = [];
+    let selectQuery = `SELECT count(*) FROM articles`;
+    if (topic) {
+        selectQuery += ` WHERE topic = $1`;
+        params.push(topic);
+    }
+
+    return db.query(selectQuery, params).then(({ rows }) => {
+        return rows[0].count;
+    });
+};
+
 exports.checkArticleExists = (article_id) => {
     return db
         .query("SELECT * FROM articles WHERE article_id = $1", [article_id])
@@ -43,4 +56,17 @@ exports.checkCommentExists = (comment_id) => {
                 return true;
             }
         });
+};
+
+exports.countComments = (article_id) => {
+    const params = [];
+    let selectQuery = `SELECT count(*) FROM comments`;
+    if (article_id) {
+        selectQuery += ` WHERE article_id = $1`;
+        params.push(article_id);
+    }
+
+    return db.query(selectQuery, params).then(({ rows }) => {
+        return rows[0].count;
+    });
 };

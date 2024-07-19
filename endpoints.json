@@ -24,7 +24,7 @@
                 "votes"
             ],
             "order": ["ASC", "DESC"],
-            "limit": "takes an integer to limit results to",
+            "limit": "takes an integer to limit results to. Default 10",
             "page": "takes an integer to specify page to start at"
         },
         "exampleResponse": {
@@ -103,8 +103,11 @@
         }
     },
     "GET /api/articles/:article_id/comments": {
-        "description": "serves an array of all comments for given article id",
-        "queries": {},
+        "description": "serves an array of comments for given article id",
+        "queries": {
+            "limit": "takes an integer to limit results to. Default 10",
+            "page": "takes an integer to specify page to start at"
+        },
         "exampleResponse": {
             "comments": [
                 {
