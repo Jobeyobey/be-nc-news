@@ -17,6 +17,7 @@ exports.selectArticles = (
         "body",
         "created_at",
         "votes",
+        "comment_count",
     ];
     const orderGreenList = ["ASC", "DESC"];
 
