@@ -14,7 +14,9 @@ To view what queries are available and information on how to use them, visit the
 
 [Fork](https://github.com/Jobeyobey/be-nc-news/fork) this repo to your own account, or clone this repo to your machine.
 
-`$ git clone https://github.com/Jobeyobey/be-nc-news.git`
+```
+$ git clone https://github.com/Jobeyobey/be-nc-news.git
+```
 
 ### Step Two: Database Environment Variables Setup
 
@@ -22,17 +24,23 @@ The environment variables for the project databases are not included in this rep
 
 To set up your databases, create your own `.env.development` and `.env.test` files in the `env_files` directory. Inside these files, set the `PGDATABASE` variables with relevant database names like so:
 
-`PGDATABASE=[your_database_name]`
+```
+PGDATABASE=[your_database_name]
+```
 
 Once you have created these, create the databases.
 
-`$ npm run setup-dbs`
+```
+$ npm run setup-dbs
+```
 
 ### Step Three: Install Dependencies
 
 Install project dependencies.
 
-`$ npm install`
+```
+$ npm install
+```
 
 This project was made with Node v22.2.0, and Postgres v16.3
 
