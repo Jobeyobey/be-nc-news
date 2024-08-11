@@ -872,7 +872,6 @@ describe("Generic error handling", () => {
             .get("/api/no-endpoint")
             .expect(404)
             .then(({ body }) => {
-                console.log(body);
                 expect(body.msg).toBe("404: Endpoint not found");
             });
     });
