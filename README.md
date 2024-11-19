@@ -4,7 +4,7 @@ This is a news API that allows you to host a CRUD database of articles and their
 
 ## Using this API
 
-You can find a hosted version of this API [here](https://be-nc-news-q2go.onrender.com).
+You can find a hosted version of this API [here](https://be-nc-news-q2go.onrender.com/api).
 
 To view what queries are available and information on how to use them, visit the `/api` endpoint [here](https://be-nc-news-q2go.onrender.com/api). (It may take a minute for the server to begin if it has not been visited for a short while).
 
